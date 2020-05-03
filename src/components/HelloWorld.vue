@@ -14,6 +14,16 @@
       <div v-if="!score">
         <div class='question-container'>
           <h4>{{question.question}}</h4>
+          <circular-count-down-timer
+            :initial-value=20
+            :show-minute=false
+            :show-hour=false
+            :size=60
+            second-label=""
+            seconds-stroke-color="#297373"
+            underneath-stroke-color="#39393a"
+            @finish="submitAnswer(-1)"
+          ></circular-count-down-timer>
         </div>
         <div class="possible-answer-container">
           <div v-bind:class='getClassForPossibleAnswer(possibleAnswer)'
@@ -25,7 +35,7 @@
       </div>
       <div class="container player-score-container" v-if="score">
         <h3>Leaderboard</h3>
-        <div class="player-score" v-for="(peerScore, index) in score" :key="peerScore">
+        <div class="player-score" v-for="(peerScore, index) in score" :key="peerScore.peerId">
           <div class="game-badge">
             {{index === 0 ? '🏆' : ''}}
             {{index === 1 ? '🥈' : ''}}
@@ -88,16 +98,19 @@ export default {
       this.score = score;
     },
     submitAnswer(answer) {
+      if(this.submittedAnswer != null) {
+        // answer is already submitted
+        return;
+      }
+
       this.submittedAnswer = answer;
-      setTimeout(() => {
-        if(this.joinerService) {
-          // joiner
-          this.joinerService.sendAnswer(answer);
-          return;
-        }
-        // host
-        this.hostService.handleAnswer(answer);
-      }, 5000);
+      if(this.joinerService) {
+        // joiner
+        this.joinerService.sendAnswer(answer);
+        return;
+      }
+      // host
+      this.hostService.handleAnswer(answer);
     },
     handleStartGame() {
       this.hostService.sendQuestion();
@@ -269,7 +282,16 @@ export default {
 }
 
 .question-container {
+  display: flex;
   padding: 16px;
+}
+
+.question-container h4 {
+  flex-grow: 1;
+}
+
+.question-container div {
+  text-align: center;
 }
 
 .possible-answer {
