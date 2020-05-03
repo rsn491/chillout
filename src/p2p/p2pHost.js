@@ -1,10 +1,11 @@
 import GameClient from './clients/gameClient.js';
+import MultimediaClient from './clients/multimediaClient.js';
 import GameSessionRepo from './infrastructure/gameSessionRepo.js';
 import MESSAGE_TYPE from './messageTypes';
 
 export default class P2PHost {
 
-  constructor(serverPeer, onGameReadyToStart, onNextQuestion, onGameScore, onGameEnded) {
+  constructor(serverPeer, onGameReadyToStart, onNextQuestion, onGameScore, onGameEnded, onYoutubeVideoURL) {
     this.serverPeer = serverPeer;
     this.peerId = serverPeer.id;
     this.peers = [];
@@ -13,6 +14,7 @@ export default class P2PHost {
     this.onNextQuestion = onNextQuestion;
     this.onGameScore = onGameScore;
     this.onGameEnded = onGameEnded;
+    this.onYoutubeVideoURL = onYoutubeVideoURL;
   }
 
   sendToAllPeers(sendToPeerFunction) {
@@ -24,6 +26,11 @@ export default class P2PHost {
     // confirm self
     session.confirmPlayer(this.peerId);
     this.sendToAllPeers((peer) => new GameClient(peer).sendGameInvite());
+  }
+
+  sendYoutubeVideo(url) {
+    this.sendToAllPeers((peer) => new MultimediaClient(peer).sendYoutubeVideo(url));
+    this.onYoutubeVideoURL(url);
   }
 
   sendQuestion() {
@@ -62,6 +69,10 @@ export default class P2PHost {
     }
   }
 
+  handleYoutubeVideoURL(url) {
+    this.sendYoutubeVideo(url);
+  }
+
   attachDataAPIHandler(peerConnection) {
     peerConnection.on('data', (data) => {
       const json = JSON.parse(data);
@@ -71,6 +82,9 @@ export default class P2PHost {
           break;
         case MESSAGE_TYPE.gameAnswer:
           this.handleAnswer(json.answer, json.peerId);
+          break;
+        case MESSAGE_TYPE.youtubeVideo:
+          this.handleYoutubeVideoURL(json.url);
           break;
         default:
           console.log('could not process request: ' + data);
