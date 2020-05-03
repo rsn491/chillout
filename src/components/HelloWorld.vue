@@ -6,10 +6,21 @@
     </div>
     <div class='navbar' v-if=roomId>
       <div class='room-id'>Room: {{roomId}}</div>
+
+      <button class="btn material-icons" v-on:click="shareYoutubeVideo">
+        theaters
+      </button>
+      <input id="youtubeVideoUrl" type="text" placeholder="youtube url"/>
       <button v-on:click="toggleMic">{{muted ? 'unmute': 'mute'}}</button>
       <button v-on:click="play">play</button>
     </div>
     <div id='video-row' class='video-row'/>
+    <div class="container video-container" v-if="youtubeVideoId">
+      <iframe id="ytplayer" type="text/html"
+        :src="`https://www.youtube.com/embed/${youtubeVideoId}?autoplay=1&origin=http://example.com`"
+        frameborder="0">
+      </iframe>
+    </div>
     <div class='container game-container' v-if="question">
       <div v-if="!score">
         <div class='question-container'>
@@ -80,9 +91,26 @@ export default {
       score: null,
       possibleAnswers: null,
       submittedAnswer: null,
+      youtubeVideoId: null,
     };
   },
   methods: {
+    getP2PService() {
+      return this.joinerService || this.hostService;
+    },
+    shareYoutubeVideo() {
+      const youtubeVideoUrl = document.getElementById('youtubeVideoUrl').value.trim();
+
+      this.getP2PService().sendYoutubeVideo(youtubeVideoUrl);
+    },
+    handleYoutubeVideoUrl(youtubeVideoUrl) {
+      const url = new URL(youtubeVideoUrl);
+      const queryParams = new URLSearchParams(url.search);
+
+      this.youtubeVideoId = queryParams.has("v")
+        ? queryParams.get("v")
+        : url.pathname.substring(1);
+    },
     getClassForPossibleAnswer(possibleAnswer) {
       if(this.submittedAnswer == null) {
         return 'possible-answer';
@@ -144,7 +172,8 @@ export default {
               this.handleStartGame,
               this.handleNextQuestion,
               this.handleGameScore,
-              () => console.log('game ended'));
+              () => console.log('game ended'),
+              this.handleYoutubeVideoUrl);
             this.hostService.start();
 
             peer.on('call', (call) => {
@@ -213,7 +242,8 @@ export default {
                   json.host,
                   this.handleNextQuestion,
                   this.handleGameScore,
-                  () => console.log('game ended'));
+                  () => console.log('game ended'),
+                  this.handleYoutubeVideoUrl);
                 this.joinerService.start();
               });
             });
@@ -306,6 +336,17 @@ export default {
 .possible-answer:hover {
   background-color: #e9d758;
   opacity: 0.5;
+}
+
+.video-container {
+  height: 60vh;
+  display: flex;
+}
+
+.video-container iframe {
+  height: auto;
+  padding-top: 16px;
+  width: 100%;
 }
 
 </style>

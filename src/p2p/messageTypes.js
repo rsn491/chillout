@@ -5,6 +5,7 @@ const MESSAGE_TYPE = {
   gameInvite: 'gameInvite',
   gameEnded: 'gameEnded',
   gameScore: 'gameScore',
+  youtubeVideo: 'youtubeVideo',
 };
 
 export default MESSAGE_TYPE;
