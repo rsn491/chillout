@@ -14,7 +14,14 @@
       <button v-on:click="toggleMic">{{muted ? 'unmute': 'mute'}}</button>
       <button v-on:click="play">play</button>
     </div>
-    <div id='video-row' class='video-row'/>
+    <div :class='showMinimizedView
+      ? "room-session-container room-session-container__minimized"
+      : "room-session-container"'>
+      <div id='user-video-cam-container'
+        :class='showMinimizedView
+          ? "user-video-cam-container"
+          : "user-video-cam-container col-xs-12 col-md-10 offset-md-1 col-lg-8 offset-lg-2"'/>
+    </div>
     <div class="container video-container" v-if="youtubeVideoId">
       <iframe id="ytplayer" type="text/html"
         :src="`https://www.youtube.com/embed/${youtubeVideoId}?autoplay=1&origin=http://example.com`"
@@ -84,6 +91,8 @@ export default {
       hostService: null,
       joinerService: null,
       muted: false,
+      showMinimizedView: false,
+      userVideoElements: [],
       connectedStreams: new Set(),
       apiBaseEndpoint: 'http://localhost:3000', // ''
       peerServer: {key: 'peerjs', host: 'localhost', port: 9000, path: 'myapp'}, //{key: 'peerjs', host: 'e8be7c9a.ngrok.io', port: 443, path: 'myapp'},
@@ -104,6 +113,9 @@ export default {
       this.getP2PService().sendYoutubeVideo(youtubeVideoUrl);
     },
     handleYoutubeVideoUrl(youtubeVideoUrl) {
+      if(!this.youtubeVideoId) {
+        this.adaptUserVideosDisplay(true);
+      }
       const url = new URL(youtubeVideoUrl);
       const queryParams = new URLSearchParams(url.search);
 
@@ -144,6 +156,9 @@ export default {
       this.hostService.sendQuestion();
     },
     handleNextQuestion(question) {
+      if(!this.question) {
+        this.adaptUserVideosDisplay(true);
+      }
       this.score = null;
       this.submittedAnswer = null;
       this.question = question;
@@ -198,9 +213,73 @@ export default {
         newVideo.onloadedmetadata = function() {
           newVideo.play();
         };
-        document.getElementById('video-row').appendChild(newVideo);
+        document.getElementById('user-video-cam-container').appendChild(newVideo);
         this.connectedStreams.add(stream.id);
+        this.userVideoElements.push(newVideo);
+        this.adaptUserVideosDisplay();
       }
+    },
+    adaptUserVideosDisplay(forceMinimize=false) {
+      const numberOfVideos = this.userVideoElements.length;
+      var numberOfRows = 1;
+      var minimize = false || forceMinimize;
+
+      if(window.innerHeight > window.innerWidth){
+        // portrait
+        if(numberOfVideos > 8) {
+          minimize = true;
+        }
+        else if(numberOfVideos > 6) {
+          numberOfRows = 4;
+        }
+        else if(numberOfVideos > 4) {
+          numberOfRows = 3;
+        }
+        else if(numberOfVideos > 2) {
+          numberOfRows = 2;
+        }
+      } else {
+        // landscape
+        if(numberOfVideos > 20) {
+          // put everything with scroll under same row
+          minimize = true;
+        }
+        else if(numberOfVideos > 12) {
+          numberOfRows = 4;
+        }
+        else if(numberOfVideos > 8) {
+          numberOfRows = 3;
+        }
+        else if(numberOfVideos > 2) {
+          numberOfRows = 2;
+        }
+      }
+
+      if(minimize) {
+        this.showMinimizedView = true;
+        if(minimize) {
+          this.userVideoElements.forEach((userVideoElement) => {
+            userVideoElement.style.width = 'auto';
+            userVideoElement.style.maxHeight = '96%';
+            userVideoElement.style.height = '96%';
+          });
+          return;
+        }
+      } else {
+        this.showMinimizedView = false;
+      }
+
+      const videosPerRow = Math.ceil(numberOfVideos / numberOfRows);
+      const marginXBetweenVideos = 1;
+      const marginYBetweenVideos = 2;
+
+      const videoWidthPerc = Math.ceil((100 / videosPerRow) - (marginXBetweenVideos * videosPerRow));
+      const videoHeightPerc = Math.round((100 / numberOfRows) - (marginYBetweenVideos * numberOfRows));
+
+      this.userVideoElements.forEach((userVideoElement) => {
+        userVideoElement.style.width = `${videoWidthPerc}%`;
+        userVideoElement.style.maxHeight = `${videoHeightPerc}%`;
+      });
     },
     toggleMic() {
       this.muted = !this.muted;
@@ -221,6 +300,10 @@ export default {
           this.localStream = stream;
           this.addVideo(stream);
           this.peer = new Peer(this.peerServer);
+          this.peer.on('call', (call) => {
+            call.answer(stream);
+            call.on('stream', (peerStream) => this.addVideo(peerStream));
+          });
 
           this.peer.on('open', (id) => {
             fetch(`${this.apiBaseEndpoint}/room/${roomId}/join`, {
@@ -290,25 +373,45 @@ export default {
   background-color: #297373;
   color: #fffffa;
   display: flex;
+  align-content: center;
   padding: 8px;
+  height: 60px;
 }
 
 .room-id {
   flex-grow: 1;
 }
 
-.video-row {
-  display: flex;
-  overflow: auto;
+.room-session-container {
   background-color: #39393a;
+  height: calc(100vh - 60px);
+  transition: height 1s;
+}
+
+.room-session-container__minimized {
   height: 140px;
+}
+
+.user-video-cam-container {
+  align-content: center;
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  height: 100%;
+  justify-content: center;
   padding: 14px;
 }
 
-.video-row >video {
+.room-session-container__minimized .user-video-cam-container {
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+  overflow-x: auto;
+}
+
+.user-video-cam-container >video {
   border-radius: 4px;
-  height: 100%;
-  margin: 0 8px;
+  margin: 1% 1%;
+  transition: width 0.7s, height 0.7s;
 }
 
 .question-container {
