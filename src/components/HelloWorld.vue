@@ -167,9 +167,10 @@ export default {
       navigator.getUserMedia({ audio: true, video: true },
         (stream) => {
           this.localStream = stream;
-          this.addVideo(stream);
-          const peer = new Peer(this.peerServer);
-          peer.on('open', (id) => {
+
+          this.peer = new Peer(this.peerServer);
+          this.peer.on('open', (id) => {
+            this.addUserVideoCam(id, stream);
             fetch(`${this.apiBaseEndpoint}/room`, {
               method: 'POST',
               headers: {
@@ -183,18 +184,14 @@ export default {
             });
 
             this.hostService = new P2PHost(
-              peer,
+              this.peer,
               this.handleStartGame,
               this.handleNextQuestion,
               this.handleGameScore,
               () => console.log('game ended'),
               this.handleYoutubeVideoUrl);
             this.hostService.start();
-
-            peer.on('call', (call) => {
-              call.answer(stream);
-              call.on('stream', (peerStream) => this.addVideo(peerStream));
-            });
+            this.attachPeerCallingHandler(this.peer, stream);
           });
         },
         function(err) {
@@ -205,8 +202,8 @@ export default {
     play() {
       this.hostService.inviteToGame();
     },
-    addVideo(stream) {
-      if(!this.connectedStreams.has(stream.id)) {
+    addUserVideoCam(peerId, stream) {
+      if(!this.userVideoElements[peerId]) {
         const newVideo = document.createElement("video");
         newVideo.srcObject = stream;
         newVideo.muted = stream.id === this.localStream.id;
@@ -214,13 +211,16 @@ export default {
           newVideo.play();
         };
         document.getElementById('user-video-cam-container').appendChild(newVideo);
-        this.connectedStreams.add(stream.id);
-        this.userVideoElements.push(newVideo);
+        this.userVideoElements[peerId] = newVideo;
         this.adaptUserVideosDisplay();
       }
     },
+    removeUserVideoCam(peerId) {
+      this.userVideoElements[peerId].remove();
+      delete this.userVideoElements[peerId];
+    },
     adaptUserVideosDisplay(forceMinimize=false) {
-      const numberOfVideos = this.userVideoElements.length;
+      const numberOfVideos = Object.keys(this.userVideoElements).length;
       var numberOfRows = 1;
       var minimize = false || forceMinimize;
 
@@ -258,7 +258,7 @@ export default {
       if(minimize) {
         this.showMinimizedView = true;
         if(minimize) {
-          this.userVideoElements.forEach((userVideoElement) => {
+          Object.values(this.userVideoElements).forEach((userVideoElement) => {
             userVideoElement.style.width = 'auto';
             userVideoElement.style.maxHeight = '96%';
             userVideoElement.style.height = '96%';
@@ -276,7 +276,7 @@ export default {
       const videoWidthPerc = Math.ceil((100 / videosPerRow) - (marginXBetweenVideos * videosPerRow));
       const videoHeightPerc = Math.round((100 / numberOfRows) - (marginYBetweenVideos * numberOfRows));
 
-      this.userVideoElements.forEach((userVideoElement) => {
+      Object.values(this.userVideoElements).forEach((userVideoElement) => {
         userVideoElement.style.width = `${videoWidthPerc}%`;
         userVideoElement.style.maxHeight = `${videoHeightPerc}%`;
       });
@@ -291,21 +291,26 @@ export default {
     },
     callPeer(peerId, ownStream) {
       const call = this.peer.call(peerId, ownStream);
-      call.on('stream', (peerStream) => this.addVideo(peerStream));
+      call.on('stream', (peerStream) => this.addUserVideoCam(call.peer, peerStream));
+      call.on('close', () => this.removeUserVideoCam(call.peer));
+    },
+    attachPeerCallingHandler(peer, ownStream) {
+      peer.on('call', (call) => {
+        call.answer(ownStream);
+        call.on('stream', (peerStream) => this.addUserVideoCam(call.peer, peerStream));
+        call.on('close', () => this.removeUserVideoCam(call.peer));
+      });
     },
     join() {
       const roomId = document.getElementById('roomid').value.trim();
       navigator.getUserMedia({ audio: true, video: true },
         (stream) => {
           this.localStream = stream;
-          this.addVideo(stream);
           this.peer = new Peer(this.peerServer);
-          this.peer.on('call', (call) => {
-            call.answer(stream);
-            call.on('stream', (peerStream) => this.addVideo(peerStream));
-          });
 
           this.peer.on('open', (id) => {
+            this.addUserVideoCam(id, stream);
+            this.attachPeerCallingHandler(this.peer, stream);
             fetch(`${this.apiBaseEndpoint}/room/${roomId}/join`, {
               method: 'POST',
               headers: {
