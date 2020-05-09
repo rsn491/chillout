@@ -1,8 +1,14 @@
 <template>
   <div class="hello">
     <div v-if=!roomId>
-      <button v-on:click="host">host</button>
-      Room:<input id="roomid" style="text"/><button v-on:click="join">join</button>
+      <form>
+        <button type="submit" v-on:click="host">Host</button>
+        
+        <label for="roomid">Room:</label>
+        <input id="roomid" style="text"/>
+        
+        <button type="submit" v-on:click="join">join</button>
+      </form>
     </div>
     <div class='navbar' v-if=roomId>
       <div class='room-id'>Room: {{roomId}}</div>
@@ -94,8 +100,9 @@ export default {
       showMinimizedView: false,
       userVideoElements: [],
       connectedStreams: new Set(),
+      // TODO(TM): Place these things in configuration of fetch the data from the backend server response.
       apiBaseEndpoint: 'http://localhost:3000', // ''
-      peerServer: {key: 'peerjs', host: 'localhost', port: 9000, path: 'myapp'}, //{key: 'peerjs', host: 'e8be7c9a.ngrok.io', port: 443, path: 'myapp'},
+      peerServer: {key: 'peerjs', host: '192.168.99.100', port: 9000, path: 'myapp'}, //{key: 'peerjs', host: 'e8be7c9a.ngrok.io', port: 443, path: 'myapp'},
       question: null,
       score: null,
       possibleAnswers: null,
@@ -163,7 +170,9 @@ export default {
       this.submittedAnswer = null;
       this.question = question;
     },
-    host() {
+    host(e) {
+      e.preventDefault()
+
       navigator.getUserMedia({ audio: true, video: true },
         (stream) => {
           this.localStream = stream;
@@ -301,7 +310,9 @@ export default {
         call.on('close', () => this.removeUserVideoCam(call.peer));
       });
     },
-    join() {
+    join(e) {
+      e.preventDefault();
+
       const roomId = document.getElementById('roomid').value.trim();
       navigator.getUserMedia({ audio: true, video: true },
         (stream) => {
