@@ -1,15 +1,8 @@
 <template>
   <div class="hello">
-    <div v-if=!roomId>
-      <form>
-        <button type="submit" v-on:click="host">Host</button>
-        
-        <label for="roomid">Room:</label>
-        <input id="roomid" style="text"/>
-        
-        <button type="submit" v-on:click="join">join</button>
-      </form>
-    </div>
+
+    <Lobby v-if=!roomId v-bind:join="join" v-bind:host="host" />
+
     <div class='navbar' v-if=roomId>
       <div class='room-id'>Room: {{roomId}}</div>
 
@@ -88,8 +81,13 @@ navigator.getUserMedia = navigator.getUserMedia ||
                          navigator.webkitGetUserMedia ||
                          navigator.mozGetUserMedia;
 
+import Lobby from './Lobby';
+
 export default {
   name: 'HelloWorld',
+  components: {
+    Lobby,
+  },
   data() {
     return {
       roomId: null,
@@ -170,9 +168,7 @@ export default {
       this.submittedAnswer = null;
       this.question = question;
     },
-    host(e) {
-      e.preventDefault()
-
+    host() {
       navigator.getUserMedia({ audio: true, video: true },
         (stream) => {
           this.localStream = stream;
@@ -310,10 +306,7 @@ export default {
         call.on('close', () => this.removeUserVideoCam(call.peer));
       });
     },
-    join(e) {
-      e.preventDefault();
-
-      const roomId = document.getElementById('roomid').value.trim();
+    join({ roomId }) {
       navigator.getUserMedia({ audio: true, video: true },
         (stream) => {
           this.localStream = stream;
