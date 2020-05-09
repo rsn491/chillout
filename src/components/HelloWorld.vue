@@ -5,7 +5,9 @@
 
     <div class='navbar' v-if=roomId>
       <div class='room-id'>Room: {{roomId}}</div>
-
+      <span class="btn material-icons" v-on:click="shareRoom">
+        person_add
+      </span>
       <button class="btn material-icons" v-on:click="shareYoutubeVideo">
         theaters
       </button>
@@ -100,17 +102,32 @@ export default {
       connectedStreams: new Set(),
       // TODO(TM): Place these things in configuration of fetch the data from the backend server response.
       apiBaseEndpoint: 'http://localhost:3000', // ''
-      peerServer: {key: 'peerjs', host: '192.168.99.100', port: 9000, path: 'myapp'}, //{key: 'peerjs', host: 'e8be7c9a.ngrok.io', port: 443, path: 'myapp'},
+      peerServer: {key: 'peerjs', host: 'localhost', port: 9000, path: 'myapp'}, //{key: 'peerjs', host: 'e8be7c9a.ngrok.io', port: 443, path: 'myapp'},
       question: null,
       score: null,
       possibleAnswers: null,
       submittedAnswer: null,
       youtubeVideoId: null,
+      showShareableLinkModal: false,
     };
   },
   methods: {
     getP2PService() {
       return this.joinerService || this.hostService;
+    },
+    isJoiningRoom() {
+
+    },
+    shareRoom() {
+      const invitationCode = this.hostService.createTmpInvitationCode();
+      const shareableLink = `${window.location.origin}\\room\\${this.roomId}?code=${invitationCode}`;
+      navigator.permissions.query({name: "clipboard-write"}).then(result => {
+        if (result.state == "granted" || result.state == "prompt") {
+            navigator.clipboard.writeText(shareableLink).then(() => {
+              alert("Shareable link copied to cliboard!")
+            });
+        }
+      });
     },
     shareYoutubeVideo() {
       const youtubeVideoUrl = document.getElementById('youtubeVideoUrl').value.trim();
@@ -196,7 +213,16 @@ export default {
               () => console.log('game ended'),
               this.handleYoutubeVideoUrl);
             this.hostService.start();
-            this.attachPeerCallingHandler(this.peer, stream);
+            this.peer.on('call', (call) => {
+              if(!this.hostService.isAuthorized(call.peer)) {
+                // unauthorized connection
+                call.close();
+                return;
+              }
+              call.answer(stream);
+              call.on('stream', (peerStream) => this.addUserVideoCam(call.peer, peerStream));
+              call.on('close', () => this.removeUserVideoCam(call.peer));
+            });
           });
         },
         function(err) {
@@ -294,19 +320,7 @@ export default {
         }
       });
     },
-    callPeer(peerId, ownStream) {
-      const call = this.peer.call(peerId, ownStream);
-      call.on('stream', (peerStream) => this.addUserVideoCam(call.peer, peerStream));
-      call.on('close', () => this.removeUserVideoCam(call.peer));
-    },
-    attachPeerCallingHandler(peer, ownStream) {
-      peer.on('call', (call) => {
-        call.answer(ownStream);
-        call.on('stream', (peerStream) => this.addUserVideoCam(call.peer, peerStream));
-        call.on('close', () => this.removeUserVideoCam(call.peer));
-      });
-    },
-    join({ roomId }) {
+    join(roomId, invitationCode) {
       navigator.getUserMedia({ audio: true, video: true },
         (stream) => {
           this.localStream = stream;
@@ -314,7 +328,6 @@ export default {
 
           this.peer.on('open', (id) => {
             this.addUserVideoCam(id, stream);
-            this.attachPeerCallingHandler(this.peer, stream);
             fetch(`${this.apiBaseEndpoint}/room/${roomId}/join`, {
               method: 'POST',
               headers: {
@@ -326,17 +339,17 @@ export default {
             }).then(res => {
               this.roomId = roomId;
               res.json().then(json => {
-                // connect with media stream to all peers
-                this.callPeer(json.host, stream);
-                json.peers.forEach(remotePeer => this.callPeer(remotePeer, stream));
                 this.joinerService = new P2PJoiner(
                   this.peer,
                   json.host,
+                  this.localStream,
                   this.handleNextQuestion,
                   this.handleGameScore,
                   () => console.log('game ended'),
-                  this.handleYoutubeVideoUrl);
-                this.joinerService.start();
+                  this.handleYoutubeVideoUrl,
+                  this.addUserVideoCam,
+                  this.removeUserVideoCam);
+                this.joinerService.start(invitationCode);
               });
             });
           });
@@ -345,6 +358,15 @@ export default {
          console.log("The following error occurred: " + err.name);
         }
       );
+    },
+  },
+  mounted() {
+    const url = new URL(window.location);
+    const roomId = url.pathname.substring("/room/".length);
+    const invitationCode = url.searchParams.get("code");
+
+    if(roomId && invitationCode) {
+      this.join(roomId, invitationCode);
     }
   },
   props: {

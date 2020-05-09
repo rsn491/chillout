@@ -1,7 +1,10 @@
+import { v4 as uuidv4 } from 'uuid';
+
 import GameClient from './clients/gameClient.js';
 import MultimediaClient from './clients/multimediaClient.js';
 import GameSessionRepo from './infrastructure/gameSessionRepo.js';
 import MESSAGE_TYPE from './messageTypes';
+import AuthClient from './clients/authClient.js';
 
 export default class P2PHost {
 
@@ -15,6 +18,8 @@ export default class P2PHost {
     this.onGameScore = onGameScore;
     this.onGameEnded = onGameEnded;
     this.onYoutubeVideoURL = onYoutubeVideoURL;
+    this.tmpRoomInvitationCode = null;
+    this.tmpRoomInvitationCodeExpDate = null;
   }
 
   sendToAllPeers(sendToPeerFunction) {
@@ -73,10 +78,56 @@ export default class P2PHost {
     this.sendYoutubeVideo(url);
   }
 
+  handleRoomAccess(peerConnection, invitationCode) {
+    if(!this.tmpRoomInvitationCode || !this.tmpRoomInvitationCodeExpDate) {
+      return false;
+    }
+    if(invitationCode === this.tmpRoomInvitationCode
+      && Date.now() < this.tmpRoomInvitationCodeExpDate) {
+        // invitation code is valid
+        this.peers.push(peerConnection);
+        new AuthClient(peerConnection).acceptRoomAccess(this.peers);
+    }
+    // ignore request for now
+    return;
+  }
+
+  handleIsPeerAuthorized(peerConnection, peerId) {
+    const isPeerAuthorized = this.isAuthorized(peerId);
+
+    if(isPeerAuthorized) {
+      new AuthClient(peerConnection).authorizedPeer(peerId);
+    } else {
+      new AuthClient(peerConnection).unauthorizedPeer(peerId);
+    }
+  }
+
+  createTmpInvitationCode() {
+    this.tmpRoomInvitationCode = uuidv4();
+    // new code is valid for 10 mins
+    this.tmpRoomInvitationCodeExpDate = new Date(Date.now() + 10*60000);
+    return this.tmpRoomInvitationCode;
+  }
+
+  isAuthorized(peerId) {
+    return this.peers.find(authorizedPeer => authorizedPeer.peer === peerId);
+  }
+
   attachDataAPIHandler(peerConnection) {
     peerConnection.on('data', (data) => {
       const json = JSON.parse(data);
+      if(json.messageType === MESSAGE_TYPE.roomAccess) {
+        this.handleRoomAccess(peerConnection, json.invitationCode);
+        return;
+      }
+      if(!this.isAuthorized(peerConnection.peer)) {
+        // ignore unauthorized for now
+        return;
+      }
       switch(json.messageType) {
+        case MESSAGE_TYPE.isPeerAuthorized:
+          this.handleIsPeerAuthorized(peerConnection, json.peerId);
+          break;
         case MESSAGE_TYPE.gameInviteAccepted:
           this.handleGameInviteAccepted(json.peerId);
           break;
@@ -94,7 +145,6 @@ export default class P2PHost {
 
   start() {
     this.serverPeer.on('connection', (newPeerConnection) => {
-      this.peers.push(newPeerConnection);
       this.attachDataAPIHandler(newPeerConnection);
     });
   }

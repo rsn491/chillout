@@ -1,4 +1,9 @@
 const MESSAGE_TYPE = {
+  roomAccess: 'roomAccess',
+  roomAccessGranted: 'roomAccessGranted',
+  isPeerAuthorized: 'isPeerAuthorized',
+  authorizedPeer: 'authorizedPeer',
+  unauthorizedPeer: 'unauthorizedPeer',
   gameAnswer: 'gameAnswer',
   gameQuestion: 'gameQuestion',
   gameInviteAccepted: 'gameInviteAccepted',

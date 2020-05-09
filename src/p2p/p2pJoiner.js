@@ -1,10 +1,12 @@
 import MESSAGE_TYPE from './messageTypes';
 import GameClient from './clients/gameClient.js';
 import MultimediaClient from './clients/multimediaClient.js';
+import AuthClient from './clients/authClient';
 
 export default class P2PJoiner {
 
-  constructor(peer, hostPeer, onNextQuestion, onGameScore,  onGameEnded, onYoutubeVideoURL) {
+  constructor(peer, hostPeer, ownStream, onNextQuestion, onGameScore,  onGameEnded, onYoutubeVideoURL,
+    onPeerVideoStreamReceived, onPeerVideoStreamClosed) {
     this.peer = peer;
     this.peerId = peer.id;
     this.hostPeer = hostPeer;
@@ -12,8 +14,13 @@ export default class P2PJoiner {
     this.onGameEnded = onGameEnded;
     this.onGameScore = onGameScore;
     this.onYoutubeVideoURL = onYoutubeVideoURL;
+    this.onPeerVideoStreamReceived = onPeerVideoStreamReceived;
+    this.onPeerVideoStreamClosed = onPeerVideoStreamClosed;
     this.gameClient = null;
     this.multimediaClient = null;
+    this.peers = [];
+    this.ownStream = ownStream;
+    this.callsPendingAuthorization = {};
   }
 
   sendAnswer(answer) {
@@ -31,8 +38,35 @@ export default class P2PJoiner {
     this.onYoutubeVideoURL(url);
   }
 
-  start() {
+  handleRoomAccessGranted(peers) {
+    // connect with media stream to all peers
+    this.callPeer(this.hostPeer, this.ownStream);
+    peers.forEach(remotePeer => this.callPeer(remotePeer, this.ownStream));
+  }
+
+  handleAuthorizedPeer(peerId) {
+    const call = this.callsPendingAuthorization[peerId];
+    call.answer(this.ownStream);
+    call.on('stream', (peerStream) => this.onPeerVideoStreamReceived(call.peer, peerStream));
+    call.on('close', () => this.onPeerVideoStreamClosed(call.peer));
+    delete this.callsPendingAuthorization[peerId];
+  }
+
+  handleUnauthorizedPeer(peerId) {
+    const call = this.callsPendingAuthorization[peerId];
+    call.close();
+    delete this.callsPendingAuthorization[peerId];
+  }
+
+  callPeer(peerId) {
+    const call = this.peer.call(peerId, this.ownStream);
+    call.on('stream', (peerStream) => this.onPeerVideoStreamReceived(call.peer, peerStream));
+    call.on('close', () => this.onPeerVideoStreamClosed(call.peer));
+  }
+
+  start(invitationCode) {
     const hostDataConnection = this.peer.connect(this.hostPeer);
+
     this.gameClient = new GameClient(hostDataConnection);
     this.multimediaClient = new MultimediaClient(hostDataConnection);
 
@@ -54,9 +88,29 @@ export default class P2PJoiner {
         case MESSAGE_TYPE.youtubeVideo:
           this.handleYoutubeVideoURL(json.url);
           break;
+        case MESSAGE_TYPE.roomAccessGranted:
+          this.handleRoomAccessGranted(json.peers);
+          break;
+        case MESSAGE_TYPE.authorizedPeer:
+          this.handleAuthorizedPeer(json.peerId);
+          break;
+        case MESSAGE_TYPE.unauthorizedPeer:
+          this.handleUnauthorizedPeer(json.peerId);
+          break;
         default:
           console.log('could not process request: ' + data);
       }
     });
+
+    // video stream handler
+    this.peer.on('call', (call) => {
+      this.callsPendingAuthorization[call.peer] = call;
+      new AuthClient(hostDataConnection).isPeerAuthorized(call.peer);
+    });
+
+    hostDataConnection.on('open', () => {
+      // request access
+      new AuthClient(hostDataConnection).requestRoomAccess(invitationCode);
+    })
   }
 }
