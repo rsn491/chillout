@@ -120,7 +120,7 @@ export default {
     },
     shareRoom() {
       const invitationCode = this.hostService.createTmpInvitationCode();
-      const shareableLink = `${window.location.origin}\\room\\${this.roomId}?code=${invitationCode}`;
+      const shareableLink = `${window.location.origin}/api/room/${this.roomId}?code=${invitationCode}`;
       navigator.permissions.query({name: "clipboard-write"}).then(result => {
         if (result.state == "granted" || result.state == "prompt") {
             navigator.clipboard.writeText(shareableLink).then(() => {
@@ -193,7 +193,7 @@ export default {
           this.peer = new Peer(this.peerServer);
           this.peer.on('open', (id) => {
             this.addUserVideoCam(id, stream);
-            fetch(`${this.apiBaseEndpoint}/room`, {
+            fetch(`${this.apiBaseEndpoint}/api/room`, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -328,7 +328,7 @@ export default {
 
           this.peer.on('open', (id) => {
             this.addUserVideoCam(id, stream);
-            fetch(`${this.apiBaseEndpoint}/room/${roomId}/join`, {
+            fetch(`${this.apiBaseEndpoint}/api/room/${roomId}/join`, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -362,7 +362,7 @@ export default {
   },
   mounted() {
     const url = new URL(window.location);
-    const roomId = url.pathname.substring("/room/".length);
+    const roomId = url.pathname.substring("/api/room/".length);
     const invitationCode = url.searchParams.get("code");
 
     if(roomId && invitationCode) {

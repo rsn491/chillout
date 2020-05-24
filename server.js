@@ -13,7 +13,7 @@ var jsonParser = bodyParser.json()
 
 app.use(cors())
 
-app.post('/room', jsonParser, function (req, res) {
+app.post('/api/room', jsonParser, function (req, res) {
   const peerId = req.body.peerId;
 
   const roomId = roomRepo.createRoom(peerId);
@@ -21,7 +21,7 @@ app.post('/room', jsonParser, function (req, res) {
   res.json({ roomId });
 });
 
-app.post('/room/:roomId/join', jsonParser, function (req, res) {
+app.post('/api/room/:roomId/join', jsonParser, function (req, res) {
   const peerId = req.body.peerId;
   const roomId = req.params.roomId;
 
@@ -31,5 +31,7 @@ app.post('/room/:roomId/join', jsonParser, function (req, res) {
 });
 
 app.use('/', express.static('dist'))
+
+app.use('*', express.static('dist/index.html'))
 
 app.listen(port, () => console.log(`Example app listening at http://localhost:${port}`))
