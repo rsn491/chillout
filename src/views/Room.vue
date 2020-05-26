@@ -1,10 +1,7 @@
 <template>
-  <div class="hello">
-
-    <Lobby v-if=!roomId v-bind:join="join" v-bind:host="host" />
-
+  <div>
     <div class='navbar' v-if=roomId>
-      <div class='room-id'>Room: {{roomId}}</div>
+      <div class='room-id'></div>
       <span class="btn material-icons" v-on:click="shareRoom">
         person_add
       </span>
@@ -83,13 +80,8 @@ navigator.getUserMedia = navigator.getUserMedia ||
                          navigator.webkitGetUserMedia ||
                          navigator.mozGetUserMedia;
 
-import Lobby from './Lobby';
-
 export default {
-  name: 'HelloWorld',
-  components: {
-    Lobby,
-  },
+  name: 'room',
   data() {
     return {
       roomId: null,
@@ -120,7 +112,7 @@ export default {
     },
     shareRoom() {
       const invitationCode = this.hostService.createTmpInvitationCode();
-      const shareableLink = `${window.location.origin}/api/room/${this.roomId}?code=${invitationCode}`;
+      const shareableLink = `${window.location.origin}/room/${this.roomId}?code=${invitationCode}`;
       navigator.permissions.query({name: "clipboard-write"}).then(result => {
         if (result.state == "granted" || result.state == "prompt") {
             navigator.clipboard.writeText(shareableLink).then(() => {
@@ -362,9 +354,13 @@ export default {
   },
   mounted() {
     const url = new URL(window.location);
-    const roomId = url.pathname.substring("/api/room/".length);
+    const roomId = url.pathname.substring("/room/".length);
     const invitationCode = url.searchParams.get("code");
 
+    if(!roomId) {
+      // Host
+      this.host();
+    }
     if(roomId && invitationCode) {
       this.join(roomId, invitationCode);
     }

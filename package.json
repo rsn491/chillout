@@ -14,7 +14,8 @@
     "peerjs": "^1.2.0",
     "uuid": "^7.0.3",
     "vue": "^2.6.11",
-    "vue-circular-count-down-timer": "^1.0.4"
+    "vue-circular-count-down-timer": "^1.0.4",
+    "vue-router": "^3.2.0"
   },
   "devDependencies": {
     "@babel/core": "^7.9.0",
