@@ -36,7 +36,7 @@
             :show-hour=false
             :size=60
             second-label=""
-            seconds-stroke-color="#297373"
+            seconds-stroke-color="#368F8B"
             underneath-stroke-color="#39393a"
             @finish="submitAnswer(-1)"
           ></circular-count-down-timer>
@@ -397,7 +397,7 @@ export default {
 }
 
 .navbar {
-  background-color: #297373;
+  background-color: #368F8B;
   color: #fffffa;
   display: flex;
   align-content: center;
@@ -455,7 +455,7 @@ export default {
 }
 
 .possible-answer {
-  border: 1px solid #297373;
+  border: 1px solid #368F8B;
   border-radius: 4px;
   cursor: pointer;
   padding: 8px;
