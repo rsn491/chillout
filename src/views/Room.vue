@@ -9,7 +9,7 @@
         <button v-if="hostService" class="btn material-icons" v-on:click="play">videogame_asset</button>
         <button class="btn material-icons" v-on:click="showShareYoutubeUrl">theaters</button>
         <button class="btn material-icons" v-on:click="toggleMic">{{muted ? 'mic_off': 'mic'}}</button>
-        <button class="btn material-icons" v-on:click="toggleCamera">{{cameraOn ? 'videocam_off': 'videocam'}}</button>
+        <button class="btn material-icons" v-on:click="toggleCamera">{{cameraOn ? 'videocam': 'videocam_off'}}</button>
       </div>
     </div>
     <div :class='showMinimizedView
@@ -326,7 +326,7 @@ export default {
       this.cameraOn = !this.cameraOn;
       this.localStream.getTracks().forEach((t) => {
         if (t.kind === 'video') {
-          t.enabled = !this.cameraOn;
+          t.enabled = this.cameraOn;
         }
       });
     },
