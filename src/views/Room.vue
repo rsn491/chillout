@@ -268,7 +268,7 @@ export default {
         else if(numberOfVideos > 4) {
           numberOfRows = 3;
         }
-        else if(numberOfVideos > 2) {
+        else if(numberOfVideos > 1) {
           numberOfRows = 2;
         }
       } else {
