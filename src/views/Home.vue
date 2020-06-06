@@ -1,7 +1,7 @@
 <template>
     <div>
-        <div class='navbar'>
-            <div class="col-xs-12 col-md-10 offset-md-1">
+        <div class='navbar navbar-expand-lg'>
+            <div class="navbar-brand">
                 <div class='app-logo' />
             </div>
         </div>
@@ -10,7 +10,7 @@
 
             <div class="app-logo-container">
                 <div class="app-logo"/>
-                <img src="https://img.shields.io/github/stars/rsn491/chillout?style=social"/>
+                <img src="https://img.shields.io/github/stars/rsn491/chillout?style=social"/>room
             </div>
                 
             <button class="btn" v-on:click=host>Try it out</button>

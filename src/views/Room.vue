@@ -1,16 +1,16 @@
 <template>
   <div>
-    <div class='navbar' v-if=roomId>
-      <div class='room-id'></div>
-      <span class="btn material-icons" v-on:click="shareRoom">
-        person_add
-      </span>
-      <button class="btn material-icons" v-on:click="shareYoutubeVideo">
-        theaters
-      </button>
-      <input id="youtubeVideoUrl" type="text" placeholder="youtube url"/>
-      <button v-on:click="toggleMic">{{muted ? 'unmute': 'mute'}}</button>
-      <button v-on:click="play">play</button>
+    <div class='navbar navbar-expand-lg justify-content-between' v-if=roomId>
+      <div class="navbar-brand">
+          <div class='app-logo' />
+      </div>
+      <div class="navbar-controls">
+        <button v-if="hostService" class="btn material-icons" v-on:click="shareRoom">person_add</button>
+        <button v-if="hostService" class="btn material-icons" v-on:click="play">videogame_asset</button>
+        <button class="btn material-icons" v-on:click="shareYoutubeVideo">theaters</button>
+        <button class="btn material-icons" v-on:click="toggleMic">{{muted ? 'mic_off': 'mic'}}</button>
+        <button class="btn material-icons" v-on:click="toggleCamera">{{cameraOn ? 'videocam_off': 'videocam'}}</button>
+      </div>
     </div>
     <div :class='showMinimizedView
       ? "room-session-container room-session-container__minimized"
@@ -18,7 +18,7 @@
       <div id='user-video-cam-container'
         :class='showMinimizedView
           ? "user-video-cam-container"
-          : "user-video-cam-container col-xs-12 col-md-10 offset-md-1 col-lg-8 offset-lg-2"'/>
+          : "user-video-cam-container col-xs-12 col-sm-10 offset-sm-1 col-md-8 offset-md-2 col-lg-6 offset-lg-3"'/>
     </div>
     <div class="container video-container" v-if="youtubeVideoId">
       <iframe id="ytplayer" type="text/html"
@@ -89,6 +89,7 @@ export default {
       hostService: null,
       joinerService: null,
       muted: false,
+      cameraOn: true,
       showMinimizedView: false,
       userVideoElements: [],
       connectedStreams: new Set(),
@@ -312,6 +313,14 @@ export default {
         }
       });
     },
+    toggleCamera() {
+      this.cameraOn = !this.cameraOn;
+      this.localStream.getTracks().forEach((t) => {
+        if (t.kind === 'video') {
+          t.enabled = !this.cameraOn;
+        }
+      });
+    },
     join(roomId, invitationCode) {
       navigator.getUserMedia({ audio: true, video: true },
         (stream) => {
@@ -372,6 +381,13 @@ export default {
 </script>
 
 <style>
+
+.navbar-controls .btn {
+  border: none;
+  height: 48px;
+  margin: 1px; 
+  width: 48px;
+}
 
 .game-container {
   background-color: #fefefe;
@@ -437,7 +453,7 @@ export default {
 
 .user-video-cam-container >video {
   border-radius: 4px;
-  margin: 1% 1%;
+  margin: 2px;
   transition: width 0.7s, height 0.7s;
 }
 
