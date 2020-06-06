@@ -10,7 +10,7 @@
 
             <div class="app-logo-container">
                 <div class="app-logo"/>
-                <img src="https://img.shields.io/github/stars/rsn491/chillout?style=social"/>room
+                <img src="https://img.shields.io/github/stars/rsn491/chillout?style=social"/>
             </div>
                 
             <button class="btn" v-on:click=host>Try it out</button>

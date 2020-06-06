@@ -7,7 +7,7 @@
       <div class="navbar-controls">
         <button v-if="hostService" class="btn material-icons" v-on:click="shareRoom">person_add</button>
         <button v-if="hostService" class="btn material-icons" v-on:click="play">videogame_asset</button>
-        <button class="btn material-icons" v-on:click="shareYoutubeVideo">theaters</button>
+        <button class="btn material-icons" v-on:click="showShareYoutubeUrl">theaters</button>
         <button class="btn material-icons" v-on:click="toggleMic">{{muted ? 'mic_off': 'mic'}}</button>
         <button class="btn material-icons" v-on:click="toggleCamera">{{cameraOn ? 'videocam_off': 'videocam'}}</button>
       </div>
@@ -15,6 +15,10 @@
     <div :class='showMinimizedView
       ? "room-session-container room-session-container__minimized"
       : "room-session-container"'>
+      <div v-if=showYoutubeVideoURLInput class='youtube-video-url-container'>
+        <input id="youtubeVideoUrl" type="text" placeholder="youtube url"/>
+        <button class="btn material-icons" v-on:click="shareYoutubeVideo">share</button>
+      </div>
       <div id='user-video-cam-container'
         :class='showMinimizedView
           ? "user-video-cam-container"
@@ -102,6 +106,7 @@ export default {
       submittedAnswer: null,
       youtubeVideoId: null,
       showShareableLinkModal: false,
+      showYoutubeVideoURLInput: false,
     };
   },
   methods: {
@@ -122,10 +127,14 @@ export default {
         }
       });
     },
+    showShareYoutubeUrl() {
+      this.showYoutubeVideoURLInput = !this.showYoutubeVideoURLInput;
+    },
     shareYoutubeVideo() {
       const youtubeVideoUrl = document.getElementById('youtubeVideoUrl').value.trim();
 
       this.getP2PService().sendYoutubeVideo(youtubeVideoUrl);
+      this.showYoutubeVideoURLInput = false;
     },
     handleYoutubeVideoUrl(youtubeVideoUrl) {
       if(!this.youtubeVideoId) {
@@ -493,6 +502,36 @@ export default {
   height: auto;
   padding-top: 16px;
   width: 100%;
+}
+
+.youtube-video-url-container {
+  align-items: center;
+  background-color: white;
+  border: 1px solid white;
+  border-radius: 2px;
+  display: flex;
+  overflow: hidden;
+  right: 2px;
+  padding: 2px 4px;
+  position: absolute;
+  top: 64px;
+  width: calc(100% - 4px);
+}
+
+.youtube-video-url-container >input {
+  border: 1px solid #368F8B;
+  flex-grow: 1;
+  height: 36px;
+  padding: 8px;
+}
+
+.youtube-video-url-container .btn {
+  width: 64px;
+  margin-left: 2px;
+}
+
+.youtube-video-url-container >input:focus {
+  border: 1px solid #368F8B;
 }
 
 </style>
