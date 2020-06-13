@@ -17,16 +17,20 @@
       : "room-session-container"'>
       <div v-if=showYoutubeVideoURLInput class='youtube-video-url-container'>
         <input id="youtubeVideoUrl" type="text" placeholder="youtube url"/>
-        <button class="btn material-icons" v-on:click="shareYoutubeVideo">share</button>
+        <button class="btn material-icons shadow-blue-btn" v-on:click="shareYoutubeVideo">share</button>
       </div>
       <div id='user-video-cam-container'
         :class='showMinimizedView
           ? "user-video-cam-container"
           : "user-video-cam-container col-xs-12 col-sm-10 offset-sm-1 col-md-8 offset-md-2 col-lg-6 offset-lg-3"'/>
     </div>
-    <div class="container video-container" v-if="youtubeVideoId">
+    <div v-if="!showMinimizedView && (youtubeVideoId || question)" class="maximize-button-container"><button v-on:click="maximize" class="btn shadow-blue-btn material-icons ">open_in_full</button></div>
+    
+    <div v-if=showMinimizedView class="minimize-button-container"><button v-on:click="minimize" class="btn shadow-blue-btn material-icons ">close_fullscreen</button></div>
+
+    <div class="container video-container" v-if="youtubeVideoId && !question">
       <iframe id="ytplayer" type="text/html"
-        :src="`https://www.youtube.com/embed/${youtubeVideoId}?autoplay=1&origin=http://example.com`"
+        :src="`https://www.youtube.com/embed/${youtubeVideoId}?autoplay=1`"
         frameborder="0">
       </iframe>
     </div>
@@ -40,8 +44,8 @@
             :show-hour=false
             :size=60
             second-label=""
-            seconds-stroke-color="#368F8B"
-            underneath-stroke-color="#39393a"
+            seconds-stroke-color="#748CAB"
+            underneath-stroke-color="#1D2D44"
             @finish="submitAnswer(-1)"
           ></circular-count-down-timer>
         </div>
@@ -252,6 +256,14 @@ export default {
       this.userVideoElements[peerId].remove();
       delete this.userVideoElements[peerId];
     },
+    minimize() {
+      this.showMinimizedView = false;
+      this.adaptUserVideosDisplay();
+    },
+    maximize() {
+      this.showMinimizedView = true;
+      this.adaptUserVideosDisplay(true);
+    },
     adaptUserVideosDisplay(forceMinimize=false) {
       const numberOfVideos = Object.keys(this.userVideoElements).length;
       var numberOfRows = 1;
@@ -307,11 +319,12 @@ export default {
       const marginYBetweenVideos = 2;
 
       const videoWidthPerc = Math.ceil((100 / videosPerRow) - (marginXBetweenVideos * videosPerRow));
-      const videoHeightPerc = Math.round((100 / numberOfRows) - (marginYBetweenVideos * numberOfRows));
+      const videoHeightPerc = Math.min(Math.round((100 / numberOfRows) - (marginYBetweenVideos * numberOfRows)), videoWidthPerc);
 
       Object.values(this.userVideoElements).forEach((userVideoElement) => {
         userVideoElement.style.width = `${videoWidthPerc}%`;
         userVideoElement.style.maxHeight = `${videoHeightPerc}%`;
+        userVideoElement.style.height = 'auto';
       });
     },
     toggleMic() {
@@ -393,6 +406,8 @@ export default {
 
 .navbar-controls .btn {
   border: none;
+  color: #F0F3F5;
+  font-size: 1.25rem;
   height: 48px;
   margin: 1px; 
   width: 48px;
@@ -400,11 +415,11 @@ export default {
 
 .game-container {
   background-color: #fefefe;
-  border: 1px solid #39393a;
+  border: 2px solid #748CAB;
   border-radius: 4px;
   padding: 12px;
   border-radius: 2px;
-  margin-top: 24px;
+  margin-top: 48px;
 }
 
 .player-score-container h3{
@@ -422,8 +437,7 @@ export default {
 }
 
 .navbar {
-  background-color: #368F8B;
-  color: #fffffa;
+  background-color: #3E5C76;
   display: flex;
   align-content: center;
   padding: 8px;
@@ -435,7 +449,7 @@ export default {
 }
 
 .room-session-container {
-  background-color: #39393a;
+  background-color: #39373a;
   height: calc(100vh - 60px);
   transition: height 1s;
 }
@@ -480,7 +494,7 @@ export default {
 }
 
 .possible-answer {
-  border: 1px solid #368F8B;
+  border: 1px solid #1D2D44;
   border-radius: 4px;
   cursor: pointer;
   padding: 8px;
@@ -500,14 +514,14 @@ export default {
 
 .video-container iframe {
   height: auto;
-  padding-top: 16px;
+  padding-top: 48px;
   width: 100%;
 }
 
 .youtube-video-url-container {
   align-items: center;
-  background-color: white;
-  border: 1px solid white;
+  background-color: #F0F3F5;
+  border: 1px solid #F0F3F5;
   border-radius: 2px;
   display: flex;
   overflow: hidden;
@@ -516,10 +530,11 @@ export default {
   position: absolute;
   top: 64px;
   width: calc(100% - 4px);
+  z-index: 1;
 }
 
 .youtube-video-url-container >input {
-  border: 1px solid #368F8B;
+  border: 1px solid #63707e;
   flex-grow: 1;
   height: 36px;
   padding: 8px;
@@ -531,7 +546,19 @@ export default {
 }
 
 .youtube-video-url-container >input:focus {
-  border: 1px solid #368F8B;
+  border: 1px solid #63707e;
+}
+
+.minimize-button-container {
+  margin-top: 2px;
+  right: 2px;
+  position: absolute;
+}
+
+.maximize-button-container {
+  margin-top: -42px;
+  right: 2px;
+  position: absolute;
 }
 
 </style>

@@ -1,15 +1,10 @@
 # chillout
 
 <img
-  src="public/img/icon3.png"
+  src="public/img/icon.png"
   alt="chillout"
   width="200"
 />
-
-# Screenshots
-
-<kbd><img title="Homepage" src="docs/homepage.png"></kbd><br/>
-
 
 # Quickstart
 

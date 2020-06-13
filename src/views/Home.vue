@@ -13,7 +13,7 @@
                 <img src="https://img.shields.io/github/stars/rsn491/chillout?style=social"/>
             </div>
                 
-            <button class="btn" v-on:click=host>Try it out</button>
+            <button class="btn shadow-blue-btn" v-on:click=host>Try it out</button>
         </div>
     </div>
 </template>
@@ -34,7 +34,7 @@ export default {
         background-size: contain;
         background-position-x: center;
         background-repeat: no-repeat;
-        background-image: url(/img/icon3.png);
+        background-image: url(/img/icon.png);
     }
 
     .navbar .app-logo {
@@ -65,20 +65,23 @@ export default {
 
     h1 {
         background-color: #F0F3F5;
-        color: #19535F;
+        color: #0D1321;
         padding: 80px;
         width: 100%
     }
 
-    .btn {
-        background-color: #297373;
-        border: 1px solid #F0F3F5;
+    .btn:focus {
+        box-shadow: none;
+    }
+
+    .shadow-blue-btn {
+        background-color: #748CAB;
         color: #F0F3F5;
     }
 
-    .btn:hover {
-        background-color: #19535F;
-        border: 1px solid #F0F3F5;
+    .shadow-blue-btn:hover {
+        background-color: #1D2D44;
         color: #F0F3F5;
     }
+
 </style>
