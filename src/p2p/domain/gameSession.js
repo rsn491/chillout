@@ -10,7 +10,7 @@ export default class GameSession {
   }
 
   addAnswer(peerId, answer) {
-    if(answer === this.getCurrentQuestion().correct_answer) {
+    if(answer === this.getCurrentQuestion().correctAnswer) {
       this.score[peerId]++;
     }
     this.peersIdsAnswers.add(peerId);
@@ -48,11 +48,11 @@ export default class GameSession {
 
     return {
       question: `${this.currentQuestionId + 1}. ${nextQuestion.question}`,
-      possibleAnswers: [nextQuestion.correct_answer, ...nextQuestion.incorrect_answers]
+      possibleAnswers: [nextQuestion.correctAnswer, ...nextQuestion.incorrectAnswers]
         .map((a) => ({sort: Math.random(), value: a}))
         .sort((a, b) => a.sort - b.sort)
         .map((a) => a.value),
-      correctAnswer: nextQuestion.correct_answer
+      correctAnswer: nextQuestion.correctAnswer
     };
   }
 

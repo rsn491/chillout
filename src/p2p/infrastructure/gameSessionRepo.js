@@ -1,5 +1,5 @@
 import GameSession from "../domain/gameSession";
-import {questions} from "./gameSessionExample.js";
+import getAPIUrl from "../../shared/getAPIUrl";
 
 export default class GameSessionRepo {
 
@@ -11,7 +11,10 @@ export default class GameSessionRepo {
     return this.gameSession;
   }
 
-  createNewSession(peerIds) {
+  async createNewSessionAsync(peerIds, numberOfQuestions) {
+    const response = await fetch(getAPIUrl(`trivia?numberOfQuestions=${numberOfQuestions}`));
+    const questions = await response.json()
+
     this.gameSession = new GameSession(peerIds, questions);
     return this.gameSession;
   }

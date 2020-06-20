@@ -79,10 +79,11 @@
 
 <script>
 
-import P2PHost from '../p2p/p2pHost.js'
-import P2PJoiner from '../p2p/p2pJoiner.js'
-
 import Peer from 'peerjs';
+
+import getAPIUrl from '../shared/getAPIUrl.js';
+import P2PHost from '../p2p/p2pHost.js';
+import P2PJoiner from '../p2p/p2pJoiner.js';
 
 navigator.getUserMedia = navigator.getUserMedia ||
                          navigator.webkitGetUserMedia ||
@@ -102,7 +103,6 @@ export default {
       userVideoElements: [],
       connectedStreams: new Set(),
       // TODO(TM): Place these things in configuration of fetch the data from the backend server response.
-      apiBaseEndpoint: 'http://localhost:3000', // ''
       peerServer: {key: 'peerjs', host: 'localhost', port: 9000, path: 'myapp'}, //{key: 'peerjs', host: 'e8be7c9a.ngrok.io', port: 443, path: 'myapp'},
       question: null,
       score: null,
@@ -199,7 +199,7 @@ export default {
           this.peer = new Peer(this.peerServer);
           this.peer.on('open', (id) => {
             this.addUserVideoCam(id, stream);
-            fetch(`${this.apiBaseEndpoint}/api/room`, {
+            fetch(getAPIUrl('room'), {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -351,7 +351,7 @@ export default {
 
           this.peer.on('open', (id) => {
             this.addUserVideoCam(id, stream);
-            fetch(`${this.apiBaseEndpoint}/api/room/${roomId}/join`, {
+            fetch(getAPIUrl(`room/${roomId}/join`), {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',

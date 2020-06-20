@@ -26,8 +26,8 @@ export default class P2PHost {
     this.peers.forEach((peer) => sendToPeerFunction(peer));
   }
 
-  inviteToGame() {
-    const session = this.gameSessionRepo.createNewSession([this.peerId, ...this.peers.map(p => p.peer)]);
+  async inviteToGame() {
+    const session = await this.gameSessionRepo.createNewSessionAsync([this.peerId, ...this.peers.map(p => p.peer)], 10);
     // confirm self
     session.confirmPlayer(this.peerId);
     this.sendToAllPeers((peer) => new GameClient(peer).sendGameInvite());
@@ -54,7 +54,7 @@ export default class P2PHost {
       const question = session.getNextQuestion();
       this.sendToAllPeers((peer) => new GameClient(peer).sendQuestion(question));
       this.onNextQuestion(question);
-    }, 5000);
+    }, 3000);
   }
 
   // eslint-disable-next-line no-unused-vars
