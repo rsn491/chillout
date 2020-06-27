@@ -70,38 +70,6 @@ export default class P2PJoiner {
     this.gameClient = new GameClient(hostDataConnection);
     this.multimediaClient = new MultimediaClient(hostDataConnection);
 
-    hostDataConnection.on('data', (data) => {
-      const json = JSON.parse(data);
-      switch(json.messageType) {
-        case MESSAGE_TYPE.gameInvite:
-          this.gameClient.acceptGameInvite(this.peerId);
-          break;
-        case MESSAGE_TYPE.gameQuestion:
-          this.onNextQuestion(json);
-          break;
-        case MESSAGE_TYPE.gameScore:
-          this.onGameScore(json.score);
-          break;
-        case MESSAGE_TYPE.gameEnded:
-          this.onGameEnded();
-          break;
-        case MESSAGE_TYPE.youtubeVideo:
-          this.handleYoutubeVideoURL(json.url);
-          break;
-        case MESSAGE_TYPE.roomAccessGranted:
-          this.handleRoomAccessGranted(json.peers);
-          break;
-        case MESSAGE_TYPE.authorizedPeer:
-          this.handleAuthorizedPeer(json.peerId);
-          break;
-        case MESSAGE_TYPE.unauthorizedPeer:
-          this.handleUnauthorizedPeer(json.peerId);
-          break;
-        default:
-          console.log('could not process request: ' + data);
-      }
-    });
-
     // video stream handler
     this.peer.on('call', (call) => {
       this.callsPendingAuthorization[call.peer] = call;
@@ -109,8 +77,44 @@ export default class P2PJoiner {
     });
 
     hostDataConnection.on('open', () => {
+
+      hostDataConnection.on('data', (data) => {
+        const json = JSON.parse(data);
+        switch(json.messageType) {
+          case MESSAGE_TYPE.gameInvite:
+            this.gameClient.acceptGameInvite(this.peerId);
+            break;
+          case MESSAGE_TYPE.gameQuestion:
+            this.onNextQuestion(json);
+            break;
+          case MESSAGE_TYPE.gameScore:
+            this.onGameScore(json.score);
+            break;
+          case MESSAGE_TYPE.gameEnded:
+            this.onGameEnded();
+            break;
+          case MESSAGE_TYPE.youtubeVideo:
+            this.handleYoutubeVideoURL(json.url);
+            break;
+          case MESSAGE_TYPE.roomAccessGranted:
+            this.handleRoomAccessGranted(json.peers);
+            break;
+          case MESSAGE_TYPE.authorizedPeer:
+            this.handleAuthorizedPeer(json.peerId);
+            break;
+          case MESSAGE_TYPE.unauthorizedPeer:
+            this.handleUnauthorizedPeer(json.peerId);
+            break;
+          default:
+            console.log('could not process request: ' + data);
+        }
+      });     
+
+      hostDataConnection.on('error', (err) => console.log(err));
+      hostDataConnection.on('close', () => console.log("closed ..."));
+
       // request access
-      new AuthClient(hostDataConnection).requestRoomAccess(invitationCode);
-    })
+      new AuthClient(hostDataConnection).requestRoomAccess(invitationCode); 
+    });
   }
 }

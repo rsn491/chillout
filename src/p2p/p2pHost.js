@@ -145,7 +145,16 @@ export default class P2PHost {
 
   start() {
     this.serverPeer.on('connection', (newPeerConnection) => {
+      newPeerConnection.on('open', () => {
+        if(this.peers.find(p => p == newPeerConnection)) {
+          new AuthClient(newPeerConnection).acceptRoomAccess(this.peers);
+        }
+      });
+      
       this.attachDataAPIHandler(newPeerConnection);
+
+      newPeerConnection.on('error', (err) => console.log(err))
+      newPeerConnection.on('close', () => console.log("closed ..."))
     });
   }
 }

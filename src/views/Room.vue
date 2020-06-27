@@ -103,7 +103,18 @@ export default {
       userVideoElements: [],
       connectedStreams: new Set(),
       // TODO(TM): Place these things in configuration of fetch the data from the backend server response.
-      peerServer: {key: 'peerjs', host: 'localhost', port: 9000, path: 'myapp'}, //{key: 'peerjs', host: 'e8be7c9a.ngrok.io', port: 443, path: 'myapp'},
+      peerServer: {
+        key: 'peerjs', 
+        host: '', //  
+        port: 9000, // 443
+        path: 'myapp',
+        config: {
+          'iceServers': [
+            { url: 'stun:stun.l.google.com:19302' },
+            { url: 'turn:178.62.34.10:3478', credential: 'VQFJ3ySt8Mkm6VKT', username: 'chilloutapp' }
+          ]
+        } 
+      },
       question: null,
       score: null,
       possibleAnswers: null,
