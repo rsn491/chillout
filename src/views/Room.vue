@@ -12,6 +12,7 @@
         <button class="btn material-icons" v-on:click="toggleCamera">{{cameraOn ? 'videocam': 'videocam_off'}}</button>
       </div>
     </div>
+    <UserNameModal/>
     <div :class='showMinimizedView
       ? "room-session-container room-session-container__minimized"
       : "room-session-container"'>
@@ -26,50 +27,52 @@
     </div>
     <div v-if="!showMinimizedView && (youtubeVideoId || question)" class="maximize-button-container"><button v-on:click="maximize" class="btn shadow-blue-btn material-icons ">open_in_full</button></div>
     
-    <div v-if=showMinimizedView class="minimize-button-container"><button v-on:click="minimize" class="btn shadow-blue-btn material-icons ">close_fullscreen</button></div>
-
-    <div class="container video-container" v-if="youtubeVideoId && !question">
-      <iframe id="ytplayer" type="text/html"
-        :src="`https://www.youtube.com/embed/${youtubeVideoId}?autoplay=1`"
-        frameborder="0">
-      </iframe>
-    </div>
-    <div class='container game-container' v-if="question">
-      <div v-if="!score">
-        <div class='question-container'>
-          <h4>{{question.question}}</h4>
-          <circular-count-down-timer
-            :initial-value=20
-            :show-minute=false
-            :show-hour=false
-            :size=60
-            second-label=""
-            seconds-stroke-color="#748CAB"
-            underneath-stroke-color="#1D2D44"
-            @finish="submitAnswer(-1)"
-          ></circular-count-down-timer>
-        </div>
-        <div class="possible-answer-container">
-          <div v-bind:class='getClassForPossibleAnswer(possibleAnswer)'
-            v-for="possibleAnswer in question.possibleAnswers" :key="possibleAnswer"
-            v-on:click="() => submittedAnswer === null && submitAnswer(possibleAnswer)">
-            {{possibleAnswer}}
-          </div>
-        </div>
+    <div class="shared-content-container">
+      <div class="shared-content-wallpaper"/>
+      <div v-if=showMinimizedView class="minimize-button-container"><button v-on:click="minimize" class="btn shadow-blue-btn material-icons ">close_fullscreen</button></div>
+      <div class="container video-container" v-if="youtubeVideoId && !question">
+        <iframe id="ytplayer" type="text/html"
+          :src="`https://www.youtube.com/embed/${youtubeVideoId}?autoplay=1`"
+          frameborder="0">
+        </iframe>
       </div>
-      <div class="container player-score-container" v-if="score">
-        <h3>Leaderboard</h3>
-        <div class="player-score" v-for="(peerScore, index) in score" :key="peerScore.peerId">
-          <div class="game-badge">
-            {{index === 0 ? '🏆' : ''}}
-            {{index === 1 ? '🥈' : ''}}
-            {{index === 2 ? '🥉' : ''}}
+      <div class='container game-container' v-if="question">
+        <div v-if="!score">
+          <div class='question-container'>
+            <h4>{{question.question}}</h4>
+            <circular-count-down-timer
+              :initial-value=20
+              :show-minute=false
+              :show-hour=false
+              :size=60
+              second-label=""
+              seconds-stroke-color="#748CAB"
+              underneath-stroke-color="#1D2D44"
+              @finish="submitAnswer(-1)"
+            ></circular-count-down-timer>
           </div>
-          <div class="flex-grow-1">
-            {{`${index + 1}. ${peerScore.peerId}`}}
+          <div class="possible-answer-container">
+            <div v-bind:class='getClassForPossibleAnswer(possibleAnswer)'
+              v-for="possibleAnswer in question.possibleAnswers" :key="possibleAnswer"
+              v-on:click="() => submittedAnswer === null && submitAnswer(possibleAnswer)">
+              {{possibleAnswer}}
+            </div>
           </div>
-          <div>
-            {{peerScore.score}}
+        </div>
+        <div class="container player-score-container" v-if="score">
+          <h3>Leaderboard</h3>
+          <div class="player-score" v-for="(peerScore, index) in score" :key="peerScore.peerId">
+            <div class="game-badge">
+              {{index === 0 ? '🏆' : ''}}
+              {{index === 1 ? '🥈' : ''}}
+              {{index === 2 ? '🥉' : ''}}
+            </div>
+            <div class="flex-grow-1">
+              {{`${index + 1}. ${peerScore.peerId}`}}
+            </div>
+            <div>
+              {{peerScore.score}}
+            </div>
           </div>
         </div>
       </div>
@@ -81,6 +84,7 @@
 
 import Peer from 'peerjs';
 
+import UserNameModal from '../components/UserNameModal';
 import getAPIUrl from '../shared/getAPIUrl.js';
 import P2PHost from '../p2p/p2pHost.js';
 import P2PJoiner from '../p2p/p2pJoiner.js';
@@ -91,6 +95,9 @@ navigator.getUserMedia = navigator.getUserMedia ||
 
 export default {
   name: 'room',
+  components: {
+    UserNameModal,
+  },
   data() {
     return {
       roomId: null,
@@ -105,7 +112,7 @@ export default {
       // TODO(TM): Place these things in configuration of fetch the data from the backend server response.
       peerServer: {
         key: 'peerjs', 
-        host: '', //  
+        host: 'localhost', //  
         port: 9000, // 443
         path: 'myapp',
         config: {
@@ -424,13 +431,28 @@ export default {
   width: 48px;
 }
 
+.shared-content-container {
+  padding: 48px 4px;
+  position: relative;
+}
+
+.shared-content-wallpaper {
+  background-image: url(/img/pattern.png);
+  background-size: contain;
+  height: 100%;
+  left: 0;
+  opacity: 0.4;
+  position: absolute;
+  top: 0;
+  width: 100%;
+  z-index: -1;
+}
+
 .game-container {
-  background-color: #fefefe;
+  background-color: white;
   border: 2px solid #748CAB;
   border-radius: 4px;
   padding: 12px;
-  border-radius: 2px;
-  margin-top: 48px;
 }
 
 .player-score-container h3{
@@ -466,7 +488,7 @@ export default {
 }
 
 .room-session-container__minimized {
-  height: 140px;
+  height: 20vh;
 }
 
 .user-video-cam-container {
@@ -525,7 +547,6 @@ export default {
 
 .video-container iframe {
   height: auto;
-  padding-top: 48px;
   width: 100%;
 }
 
@@ -561,9 +582,9 @@ export default {
 }
 
 .minimize-button-container {
-  margin-top: 2px;
   right: 2px;
   position: absolute;
+  top: 4px;
 }
 
 .maximize-button-container {
