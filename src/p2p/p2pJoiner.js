@@ -5,13 +5,11 @@ import AuthClient from './clients/authClient';
 
 export default class P2PJoiner {
 
-  constructor(peer, hostPeer, ownStream, onNextQuestion, onGameScore,  onGameEnded, onYoutubeVideoURL,
-    onPeerVideoStreamReceived, onPeerVideoStreamClosed) {
+  constructor(peer, hostPeer, ownStream, onNextQuestion, onGameScore, onYoutubeVideoURL, onPeerVideoStreamReceived, onPeerVideoStreamClosed) {
     this.peer = peer;
     this.peerId = peer.id;
     this.hostPeer = hostPeer;
     this.onNextQuestion = onNextQuestion;
-    this.onGameEnded = onGameEnded;
     this.onGameScore = onGameScore;
     this.onYoutubeVideoURL = onYoutubeVideoURL;
     this.onPeerVideoStreamReceived = onPeerVideoStreamReceived;

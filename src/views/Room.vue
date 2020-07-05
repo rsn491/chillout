@@ -27,9 +27,9 @@
     </div>
     <div v-if="!showMinimizedView && (youtubeVideoId || question)" class="maximize-button-container"><button v-on:click="maximize" class="btn shadow-blue-btn material-icons ">open_in_full</button></div>
     
-    <div class="shared-content-container">
+    <div class="shared-content-container" v-if="showMinimizedView">
       <div class="shared-content-wallpaper"/>
-      <div v-if=showMinimizedView class="minimize-button-container"><button v-on:click="minimize" class="btn shadow-blue-btn material-icons ">close_fullscreen</button></div>
+      <div class="minimize-button-container"><button v-on:click="minimize" class="btn shadow-blue-btn material-icons ">close_fullscreen</button></div>
       <div class="container video-container" v-if="youtubeVideoId && !question">
         <iframe id="ytplayer" type="text/html"
           :src="`https://www.youtube.com/embed/${youtubeVideoId}?autoplay=1`"
@@ -56,12 +56,12 @@
               v-for="possibleAnswer in question.possibleAnswers" :key="possibleAnswer"
               v-on:click="() => submittedAnswer === null && submitAnswer(possibleAnswer)">
               {{possibleAnswer}}
-            </div>
+            </div>         
           </div>
         </div>
-        <div class="container player-score-container" v-if="score">
+        <div class="container player-score-container" v-if="score && !score.isGameFinished">
           <h3>Leaderboard</h3>
-          <div class="player-score" v-for="(peerScore, index) in score" :key="peerScore.peerId">
+          <div class="player-score" v-for="(peerScore, index) in score.scores" :key="peerScore.peerId">
             <div class="game-badge">
               {{index === 0 ? '🏆' : ''}}
               {{index === 1 ? '🥈' : ''}}
@@ -75,6 +75,7 @@
             </div>
           </div>
         </div>
+        <Podium  v-if="score && score.isGameFinished" :score=score />
       </div>
     </div>
   </div>
@@ -84,6 +85,7 @@
 
 import Peer from 'peerjs';
 
+import Podium from '../components/Podium';
 import UserNameModal from '../components/UserNameModal';
 import getAPIUrl from '../shared/getAPIUrl.js';
 import P2PHost from '../p2p/p2pHost.js';
@@ -96,6 +98,7 @@ navigator.getUserMedia = navigator.getUserMedia ||
 export default {
   name: 'room',
   components: {
+    Podium,
     UserNameModal,
   },
   data() {
@@ -112,8 +115,8 @@ export default {
       // TODO(TM): Place these things in configuration of fetch the data from the backend server response.
       peerServer: {
         key: 'peerjs', 
-        host: 'localhost', //  
-        port: 9000, // 443
+        host: 'localhost',   
+        port: 9000, 
         path: 'myapp',
         config: {
           'iceServers': [
@@ -234,7 +237,6 @@ export default {
               this.handleStartGame,
               this.handleNextQuestion,
               this.handleGameScore,
-              () => console.log('game ended'),
               this.handleYoutubeVideoUrl);
             this.hostService.start();
             this.peer.on('call', (call) => {
@@ -386,7 +388,6 @@ export default {
                   this.localStream,
                   this.handleNextQuestion,
                   this.handleGameScore,
-                  () => console.log('game ended'),
                   this.handleYoutubeVideoUrl,
                   this.addUserVideoCam,
                   this.removeUserVideoCam);
@@ -432,6 +433,7 @@ export default {
 }
 
 .shared-content-container {
+  height: 73vh;
   padding: 48px 4px;
   position: relative;
 }

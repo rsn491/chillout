@@ -8,7 +8,7 @@ import AuthClient from './clients/authClient.js';
 
 export default class P2PHost {
 
-  constructor(serverPeer, onGameReadyToStart, onNextQuestion, onGameScore, onGameEnded, onYoutubeVideoURL) {
+  constructor(serverPeer, onGameReadyToStart, onNextQuestion, onGameScore, onYoutubeVideoURL) {
     this.serverPeer = serverPeer;
     this.peerId = serverPeer.id;
     this.peers = [];
@@ -16,7 +16,6 @@ export default class P2PHost {
     this.onGameReadyToStart = onGameReadyToStart;
     this.onNextQuestion = onNextQuestion;
     this.onGameScore = onGameScore;
-    this.onGameEnded = onGameEnded;
     this.onYoutubeVideoURL = onYoutubeVideoURL;
     this.tmpRoomInvitationCode = null;
     this.tmpRoomInvitationCodeExpDate = null;
@@ -40,24 +39,20 @@ export default class P2PHost {
 
   sendQuestion() {
     const session = this.gameSessionRepo.getSession();
-
-    if(!session.hasNextQuestion()) {
-      this.sendToAllPeers((peer) => new GameClient(peer).sendGameEnded());
-      this.onGameEnded();
-      return;
-    }
-
     const scoreBoard = session.getScoreBoard();
+
     this.sendToAllPeers((peer) => new GameClient(peer).sendScore(scoreBoard));
     this.onGameScore(scoreBoard);
-    setTimeout(() => {
-      const question = session.getNextQuestion();
-      this.sendToAllPeers((peer) => new GameClient(peer).sendQuestion(question));
-      this.onNextQuestion(question);
-    }, 3000);
+
+    if(!scoreBoard.isGameFinished) {
+      setTimeout(() => {
+        const question = session.getNextQuestion();
+        this.sendToAllPeers((peer) => new GameClient(peer).sendQuestion(question));
+        this.onNextQuestion(question);
+      }, 3000);
+    }
   }
 
-  // eslint-disable-next-line no-unused-vars
   handleAnswer(answer, peerId = this.peerId) {
     const session = this.gameSessionRepo.getSession();
     session.addAnswer(peerId, answer);

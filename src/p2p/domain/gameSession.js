@@ -1,3 +1,5 @@
+import GameScore from './gameScore';
+
 export default class GameSession {
 
   constructor(peerIds, questions) {
@@ -22,11 +24,11 @@ export default class GameSession {
   }
 
   getScoreBoard() {
-    return Object.keys(this.score)
+    const scores = Object.keys(this.score)
       .map(peerId => {
         return { peerId,  score: this.score[peerId]};
-      })
-      .sort((a,b) => b.score - a.score);
+      });
+    return new GameScore(scores, !this.hasNextQuestion());
   }
 
   hasEveryoneAnswered() {
