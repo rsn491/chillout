@@ -7,12 +7,19 @@ export default class AuthClient extends P2PClient {
     super(peerConnection);
   }
 
-  requestRoomAccess(invitationCode) {
-    this.send(new P2PRequest(MESSAGE_TYPE.roomAccess, {invitationCode}));
+  requestRoomAccess(invitationCode, username) {
+    this.send(new P2PRequest(MESSAGE_TYPE.roomAccess, {invitationCode, username}));
   }
 
-  acceptRoomAccess(peerConnections) {
-    this.send(new P2PRequest(MESSAGE_TYPE.roomAccessGranted, {peers: peerConnections.map(p => p.peer)}));
+  acceptRoomAccess(roomUsers) {
+    this.send(new P2PRequest(MESSAGE_TYPE.roomAccessGranted, {
+      peers: roomUsers.map(user => {
+        return {
+          peerConnection: user.peerConnection.peer,
+          username: user.username,
+        };
+      })
+    }));
   }
 
   isPeerAuthorized(peerId) {

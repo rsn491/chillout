@@ -12,7 +12,7 @@
         <button class="btn material-icons" v-on:click="toggleCamera">{{cameraOn ? 'videocam': 'videocam_off'}}</button>
       </div>
     </div>
-    <UserNameModal/>
+    <UserNameModal v-if=!username :onUsernamePicked=handleUsernamePicked />
     <div :class='showMinimizedView
       ? "room-session-container room-session-container__minimized"
       : "room-session-container"'>
@@ -68,7 +68,7 @@
               {{index === 2 ? '🥉' : ''}}
             </div>
             <div class="flex-grow-1">
-              {{`${index + 1}. ${peerScore.peerId}`}}
+              {{`${index + 1}. ${peerScore.username}`}}
             </div>
             <div>
               {{peerScore.score}}
@@ -125,6 +125,7 @@ export default {
           ]
         } 
       },
+      username: null,
       question: null,
       score: null,
       possibleAnswers: null,
@@ -212,7 +213,7 @@ export default {
       this.submittedAnswer = null;
       this.question = question;
     },
-    host() {
+    host(username) {
       navigator.getUserMedia({ audio: true, video: true },
         (stream) => {
           this.localStream = stream;
@@ -234,6 +235,7 @@ export default {
 
             this.hostService = new P2PHost(
               this.peer,
+              username,
               this.handleStartGame,
               this.handleNextQuestion,
               this.handleGameScore,
@@ -363,7 +365,22 @@ export default {
         }
       });
     },
-    join(roomId, invitationCode) {
+    handleUsernamePicked(username) {
+      const url = new URL(window.location);
+      const roomId = url.pathname.substring("/room/".length);
+      const invitationCode = url.searchParams.get("code");
+
+      this.username = username;
+
+      if(!roomId) {
+        // Host
+        this.host(username);
+      }
+      if(roomId && invitationCode) {
+        this.join(roomId, invitationCode, username);
+      }
+    },
+    join(roomId, invitationCode, username) {
       navigator.getUserMedia({ audio: true, video: true },
         (stream) => {
           this.localStream = stream;
@@ -391,7 +408,7 @@ export default {
                   this.handleYoutubeVideoUrl,
                   this.addUserVideoCam,
                   this.removeUserVideoCam);
-                this.joinerService.start(invitationCode);
+                this.joinerService.start(invitationCode, username);
               });
             });
           });
@@ -401,19 +418,6 @@ export default {
         }
       );
     },
-  },
-  mounted() {
-    const url = new URL(window.location);
-    const roomId = url.pathname.substring("/room/".length);
-    const invitationCode = url.searchParams.get("code");
-
-    if(!roomId) {
-      // Host
-      this.host();
-    }
-    if(roomId && invitationCode) {
-      this.join(roomId, invitationCode);
-    }
   },
   props: {
     msg: String

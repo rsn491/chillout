@@ -62,7 +62,7 @@ export default class P2PJoiner {
     call.on('close', () => this.onPeerVideoStreamClosed(call.peer));
   }
 
-  start(invitationCode) {
+  start(invitationCode, username) {
     const hostDataConnection = this.peer.connect(this.hostPeer);
 
     this.gameClient = new GameClient(hostDataConnection);
@@ -112,7 +112,7 @@ export default class P2PJoiner {
       hostDataConnection.on('close', () => console.log("closed ..."));
 
       // request access
-      new AuthClient(hostDataConnection).requestRoomAccess(invitationCode); 
+      new AuthClient(hostDataConnection).requestRoomAccess(invitationCode, username); 
     });
   }
 }

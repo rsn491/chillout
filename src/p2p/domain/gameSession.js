@@ -2,8 +2,9 @@ import GameScore from './gameScore';
 
 export default class GameSession {
 
-  constructor(peerIds, questions) {
-    this.peerIds = peerIds;
+  constructor(users, questions) {
+    this.users = users;
+    this.peerIds = users.map(user => user.getPeerId());
     this.questions = questions;
     this.confirmedPeerIds = new Set();
     this.currentQuestionId = -1;
@@ -26,7 +27,11 @@ export default class GameSession {
   getScoreBoard() {
     const scores = Object.keys(this.score)
       .map(peerId => {
-        return { peerId,  score: this.score[peerId]};
+        return { 
+          peerId,
+          username: this.users.find(user => user.getPeerId() === peerId).username,  
+          score: this.score[peerId]
+        };
       });
     return new GameScore(scores, !this.hasNextQuestion());
   }

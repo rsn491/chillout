@@ -5,13 +5,14 @@ import MultimediaClient from './clients/multimediaClient.js';
 import GameSessionRepo from './infrastructure/gameSessionRepo.js';
 import MESSAGE_TYPE from './messageTypes';
 import AuthClient from './clients/authClient.js';
+import RoomUser from './domain/roomUser.js';
 
 export default class P2PHost {
 
-  constructor(serverPeer, onGameReadyToStart, onNextQuestion, onGameScore, onYoutubeVideoURL) {
-    this.serverPeer = serverPeer;
-    this.peerId = serverPeer.id;
-    this.peers = [];
+  constructor(hostPeer, username, onGameReadyToStart, onNextQuestion, onGameScore, onYoutubeVideoURL) {
+    this.hostUser = new RoomUser(username, hostPeer);
+    this.peerId = hostPeer.id;
+    this.roomUsers = [];
     this.gameSessionRepo = new GameSessionRepo();
     this.onGameReadyToStart = onGameReadyToStart;
     this.onNextQuestion = onNextQuestion;
@@ -22,11 +23,11 @@ export default class P2PHost {
   }
 
   sendToAllPeers(sendToPeerFunction) {
-    this.peers.forEach((peer) => sendToPeerFunction(peer));
+    this.roomUsers.forEach((user) => sendToPeerFunction(user.peerConnection));
   }
 
   async inviteToGame() {
-    const session = await this.gameSessionRepo.createNewSessionAsync([this.peerId, ...this.peers.map(p => p.peer)], 10);
+    const session = await this.gameSessionRepo.createNewSessionAsync([this.hostUser, ...this.roomUsers], 2);
     // confirm self
     session.confirmPlayer(this.peerId);
     this.sendToAllPeers((peer) => new GameClient(peer).sendGameInvite());
@@ -73,15 +74,15 @@ export default class P2PHost {
     this.sendYoutubeVideo(url);
   }
 
-  handleRoomAccess(peerConnection, invitationCode) {
+  handleRoomAccess(peerConnection, invitationCode, username) {
     if(!this.tmpRoomInvitationCode || !this.tmpRoomInvitationCodeExpDate) {
       return false;
     }
     if(invitationCode === this.tmpRoomInvitationCode
       && Date.now() < this.tmpRoomInvitationCodeExpDate) {
         // invitation code is valid
-        this.peers.push(peerConnection);
-        new AuthClient(peerConnection).acceptRoomAccess(this.peers);
+        this.roomUsers.push(new RoomUser(username, peerConnection));
+        new AuthClient(peerConnection).acceptRoomAccess(this.roomUsers);
     }
     // ignore request for now
     return;
@@ -105,14 +106,14 @@ export default class P2PHost {
   }
 
   isAuthorized(peerId) {
-    return this.peers.find(authorizedPeer => authorizedPeer.peer === peerId);
+    return this.roomUsers.find(authorizedPeer => authorizedPeer.peerConnection.peer === peerId);
   }
 
   attachDataAPIHandler(peerConnection) {
     peerConnection.on('data', (data) => {
       const json = JSON.parse(data);
       if(json.messageType === MESSAGE_TYPE.roomAccess) {
-        this.handleRoomAccess(peerConnection, json.invitationCode);
+        this.handleRoomAccess(peerConnection, json.invitationCode, json.username);
         return;
       }
       if(!this.isAuthorized(peerConnection.peer)) {
@@ -139,10 +140,10 @@ export default class P2PHost {
   }
 
   start() {
-    this.serverPeer.on('connection', (newPeerConnection) => {
+    this.hostUser.peerConnection.on('connection', (newPeerConnection) => {
       newPeerConnection.on('open', () => {
-        if(this.peers.find(p => p == newPeerConnection)) {
-          new AuthClient(newPeerConnection).acceptRoomAccess(this.peers);
+        if(this.isAuthorized(newPeerConnection)) {
+          new AuthClient(newPeerConnection).acceptRoomAccess(this.roomUsers);
         }
       });
       

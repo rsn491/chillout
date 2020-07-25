@@ -10,7 +10,7 @@ export default class GameScore {
     }
 
     getFirstPlaceUserName() {
-        return this.scores[0] && this.scores[0].peerId;
+        return this.scores[0] && this.scores[0].username;
     }
 
     getSecondPlaceScore() {
@@ -18,7 +18,7 @@ export default class GameScore {
     }
 
     getSecondPlaceUserName() {
-        return this.scores[1] && this.scores[1].peerId;
+        return this.scores[1] && this.scores[1].username;
     }
 
     getThirdPlaceScore() {
@@ -26,7 +26,7 @@ export default class GameScore {
     }
 
     getThirdPlaceUserName() {
-        return this.scores[2] && this.scores[2].peerId;
+        return this.scores[2] && this.scores[2].username;
     }
 
 }
