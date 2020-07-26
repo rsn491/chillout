@@ -1,26 +1,28 @@
 <template>
     <div>
-        <div class='navbar navbar-expand-lg'>
-            <div class="navbar-brand">
-                <div class='app-logo' />
-            </div>
-        </div>
+        <Navbar/>
         <div class="home-page-container">
-            <h1>P2P video-chat web app <br> for hanging out with friends</h1>
+            <h1>P2P video chat app <br> for hanging out</h1>
 
             <div class="app-logo-container">
                 <div class="app-logo"/>
                 <img src="https://img.shields.io/github/stars/rsn491/chillout?style=social"/>
             </div>
                 
-            <button class="btn shadow-blue-btn" v-on:click=host>Try it out</button>
+            <button class="btn shadow-blue-btn confirm-btn" v-on:click=host>Try it out</button>
         </div>
     </div>
 </template>
 
 <script>
+
+import Navbar from '../components/Navbar';
+
 export default {
     name: 'home',
+    components: {
+        Navbar,
+    },
     methods: {
         host() {
             this.$router.push({ path: 'room' });
@@ -35,11 +37,6 @@ export default {
         background-position-x: center;
         background-repeat: no-repeat;
         background-image: url(/img/icon.png);
-    }
-
-    .navbar .app-logo {
-        height: 50px;
-        width: 50px;
     }
 
     .app-logo-container .app-logo {
@@ -72,6 +69,10 @@ export default {
 
     .btn:focus {
         box-shadow: none;
+    }
+
+    .confirm-btn {
+        padding: 8px 44px;
     }
 
     .shadow-blue-btn {

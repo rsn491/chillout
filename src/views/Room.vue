@@ -1,17 +1,13 @@
 <template>
   <div>
-    <div class='navbar navbar-expand-lg justify-content-between' v-if=roomId>
-      <div class="navbar-brand">
-          <div class='app-logo' />
-      </div>
-      <div class="navbar-controls">
-        <button v-if="hostService" class="btn material-icons" v-on:click="shareRoom">person_add</button>
-        <button v-if="hostService" class="btn material-icons" v-on:click="play">videogame_asset</button>
-        <button class="btn material-icons" v-on:click="showShareYoutubeUrl">theaters</button>
-        <button class="btn material-icons" v-on:click="toggleMic">{{muted ? 'mic_off': 'mic'}}</button>
-        <button class="btn material-icons" v-on:click="toggleCamera">{{cameraOn ? 'videocam': 'videocam_off'}}</button>
-      </div>
-    </div>
+    <Navbar 
+      :muted=muted
+      :cameraOn=cameraOn
+      :onShareRoom="isHost() ? shareRoom : null"
+      :onStartTriviaGame="isHost()  ? play : null"
+      :onOpenShareYoutube="showShareYoutubeUrl"
+      :onToggleMic="toggleMic"
+      :onToggleCamera="toggleCamera" />
     <UserNameModal v-if=!username :onUsernamePicked=handleUsernamePicked />
     <div :class='showMinimizedView
       ? "room-session-container room-session-container__minimized"
@@ -85,6 +81,7 @@
 
 import Peer from 'peerjs';
 
+import Navbar from '../components/Navbar';
 import Podium from '../components/Podium';
 import UserNameModal from '../components/UserNameModal';
 import getAPIUrl from '../shared/getAPIUrl.js';
@@ -98,6 +95,7 @@ navigator.getUserMedia = navigator.getUserMedia ||
 export default {
   name: 'room',
   components: {
+    Navbar,
     Podium,
     UserNameModal,
   },
@@ -138,9 +136,6 @@ export default {
   methods: {
     getP2PService() {
       return this.joinerService || this.hostService;
-    },
-    isJoiningRoom() {
-
     },
     shareRoom() {
       const invitationCode = this.hostService.createTmpInvitationCode();
@@ -194,13 +189,12 @@ export default {
       }
 
       this.submittedAnswer = answer;
-      if(this.joinerService) {
-        // joiner
-        this.joinerService.sendAnswer(answer);
+      if(this.isHost()) {
+        this.hostService.handleAnswer(answer);
         return;
       }
-      // host
-      this.hostService.handleAnswer(answer);
+
+      this.joinerService.sendAnswer(answer);
     },
     handleStartGame() {
       this.hostService.sendQuestion();
@@ -365,6 +359,9 @@ export default {
         }
       });
     },
+    isHost() {
+      return !!this.hostService;
+    },
     handleUsernamePicked(username) {
       const url = new URL(window.location);
       const roomId = url.pathname.substring("/room/".length);
@@ -375,8 +372,7 @@ export default {
       if(!roomId) {
         // Host
         this.host(username);
-      }
-      if(roomId && invitationCode) {
+      } else if(invitationCode) {
         this.join(roomId, invitationCode, username);
       }
     },
@@ -427,15 +423,6 @@ export default {
 
 <style>
 
-.navbar-controls .btn {
-  border: none;
-  color: #F0F3F5;
-  font-size: 1.25rem;
-  height: 48px;
-  margin: 1px; 
-  width: 48px;
-}
-
 .shared-content-container {
   height: 73vh;
   padding: 48px 4px;
@@ -473,14 +460,6 @@ export default {
 
 .player-score .game-badge {
   width: 24px;
-}
-
-.navbar {
-  background-color: #3E5C76;
-  display: flex;
-  align-content: center;
-  padding: 8px;
-  height: 60px;
 }
 
 .room-id {
@@ -575,6 +554,7 @@ export default {
   border: 1px solid #63707e;
   flex-grow: 1;
   height: 36px;
+  outline: none;
   padding: 8px;
 }
 

@@ -10,11 +10,11 @@
         
         <div class="modal-body">
           <input type="text" placeholder="username" :value=username />
-          <button class="btn material-icons" v-on:click="generateRandomUsername">replay</button>
+          <button class="btn shadow-blue-btn material-icons" v-on:click="generateRandomUsername">replay</button>
         </div>
         
         <div class="modal-footer">
-          <button class="btn shadow-blue-btn" v-on:click="() => onUsernamePicked(username)">Ok</button>
+          <button class="btn shadow-blue-btn confirm-btn" v-on:click="() => onUsernamePicked(username)">Ok</button>
         </div>
       </div>
     </div>
@@ -54,7 +54,25 @@ export default {
 }
 
 .modal-body {
-  text-align: center;
+  display: flex;
+}
+
+.modal-body input {
+  border: 1px solid #748CAB;
+  border-radius: 2px;
+  height: 44px;
+  flex-grow: 1;
+  padding: 8px;
+  margin-right: 4px;
+}
+
+.modal-body button {
+  font-size: 20px;
+}
+
+.modal-body input:focus {
+  border: 2px solid #748CAB;
+  outline: none;
 }
 
 .modal-footer {

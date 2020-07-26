@@ -20,9 +20,9 @@ export default new Router({
       component: Room,
     },
     {
-        path: '/room/:roomId',
-        name: 'room',
-        component: Room,
-      },
+      path: '/room/:roomId',
+      name: 'room',
+      component: Room,
+    },
   ],
 });
