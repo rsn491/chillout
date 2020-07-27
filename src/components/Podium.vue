@@ -3,19 +3,19 @@
   <canvas id="podium-canvas"/>
   <h3 v-if="showUserNames">Congratulations<br>{{firstPlaceUserName}}!</h3>
   <div class="podium-row">
-    <div :class="startPodiumAnimation ? 
+    <div :class="startPodiumAnimation ?
       'podium-row-col podium-row-col__silver' :
       'podium-row-col podium-row-col__silver podium-row-col__silver--minimized'">
       <div>{{secondPlaceScore}}</div>
       <p v-if="showUserNames">{{secondPlaceUserName}}</p>
     </div>
-    <div :class="startPodiumAnimation ? 
+    <div :class="startPodiumAnimation ?
       'podium-row-col podium-row-col__gold' :
       'podium-row-col podium-row-col__gold podium-row-col__gold--minimized'">
       <div>{{firstPlaceScore}}</div>
       <p v-if="showUserNames">{{firstPlaceUserName}}</p>
     </div>
-    <div v-if="thirdPlaceUserName" :class="startPodiumAnimation ? 
+    <div v-if="thirdPlaceUserName" :class="startPodiumAnimation ?
       'podium-row-col podium-row-col__bronze' :
       'podium-row-col podium-row-col__bronze podium-row-col__bronze--minimized'">
       <div>{{thirdPlaceScore}}</div>
@@ -72,7 +72,7 @@ export default {
           if (Date.now() < end) {
             requestAnimationFrame(frame);
           }
-        }());  
+        }());
       }
     },
     mounted() {
@@ -124,7 +124,7 @@ export default {
     color: #3E5C76;
     display: flex;
     justify-content: center;
-    width: 120px; 
+    width: 120px;
   }
 
   .podium-row-col__silver >div {

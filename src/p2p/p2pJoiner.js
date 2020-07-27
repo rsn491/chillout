@@ -5,7 +5,7 @@ import AuthClient from './clients/authClient';
 
 export default class P2PJoiner {
 
-  constructor(peer, hostPeer, ownStream, onNextQuestion, onGameScore, onYoutubeVideoURL, onPeerVideoStreamReceived, onPeerVideoStreamClosed) {
+  constructor(peer, hostPeer, ownStream, onNextQuestion, onGameScore, onYoutubeVideoURL, onPeerVideoStreamReceived, onPeerVideoStreamClosed, onGameInvite) {
     this.peer = peer;
     this.peerId = peer.id;
     this.hostPeer = hostPeer;
@@ -19,6 +19,7 @@ export default class P2PJoiner {
     this.peers = [];
     this.ownStream = ownStream;
     this.callsPendingAuthorization = {};
+    this.onGameInvite = onGameInvite;
   }
 
   sendAnswer(answer) {
@@ -56,6 +57,11 @@ export default class P2PJoiner {
     delete this.callsPendingAuthorization[peerId];
   }
 
+  handleGameInvite() {
+    this.onGameInvite();
+    this.gameClient.acceptGameInvite(this.peerId);
+  }
+
   callPeer(peerId) {
     const call = this.peer.call(peerId, this.ownStream);
     call.on('stream', (peerStream) => this.onPeerVideoStreamReceived(call.peer, peerStream));
@@ -80,7 +86,7 @@ export default class P2PJoiner {
         const json = JSON.parse(data);
         switch(json.messageType) {
           case MESSAGE_TYPE.gameInvite:
-            this.gameClient.acceptGameInvite(this.peerId);
+            this.handleGameInvite();
             break;
           case MESSAGE_TYPE.gameQuestion:
             this.onNextQuestion(json);
@@ -106,13 +112,13 @@ export default class P2PJoiner {
           default:
             console.log('could not process request: ' + data);
         }
-      });     
+      });
 
       hostDataConnection.on('error', (err) => console.log(err));
       hostDataConnection.on('close', () => console.log("closed ..."));
 
       // request access
-      new AuthClient(hostDataConnection).requestRoomAccess(invitationCode, username); 
+      new AuthClient(hostDataConnection).requestRoomAccess(invitationCode, username);
     });
   }
 }

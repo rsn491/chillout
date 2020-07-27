@@ -1,6 +1,6 @@
 <template>
   <div>
-    <Navbar 
+    <Navbar
       :muted=muted
       :cameraOn=cameraOn
       :onShareRoom="isHost() ? shareRoom : null"
@@ -9,6 +9,9 @@
       :onToggleMic="toggleMic"
       :onToggleCamera="toggleCamera" />
     <UserNameModal v-if=!username :onUsernamePicked=handleUsernamePicked />
+
+    <RoomNotification :type=notificationType />
+
     <div :class='showMinimizedView
       ? "room-session-container room-session-container__minimized"
       : "room-session-container"'>
@@ -22,7 +25,7 @@
           : "user-video-cam-container col-xs-12 col-sm-10 offset-sm-1 col-md-8 offset-md-2 col-lg-6 offset-lg-3"'/>
     </div>
     <div v-if="!showMinimizedView && (youtubeVideoId || question)" class="maximize-button-container"><button v-on:click="maximize" class="btn shadow-blue-btn material-icons ">open_in_full</button></div>
-    
+
     <div class="shared-content-container" v-if="showMinimizedView">
       <div class="shared-content-wallpaper"/>
       <div class="minimize-button-container"><button v-on:click="minimize" class="btn shadow-blue-btn material-icons ">close_fullscreen</button></div>
@@ -52,7 +55,7 @@
               v-for="possibleAnswer in question.possibleAnswers" :key="possibleAnswer"
               v-on:click="() => submittedAnswer === null && submitAnswer(possibleAnswer)">
               {{possibleAnswer}}
-            </div>         
+            </div>
           </div>
         </div>
         <div class="container player-score-container" v-if="score && !score.isGameFinished">
@@ -81,6 +84,7 @@
 
 import Peer from 'peerjs';
 
+import RoomNotification, { NotificationTypes } from '../components/RoomNotification';
 import Navbar from '../components/Navbar';
 import Podium from '../components/Podium';
 import UserNameModal from '../components/UserNameModal';
@@ -97,6 +101,7 @@ export default {
   components: {
     Navbar,
     Podium,
+    RoomNotification,
     UserNameModal,
   },
   data() {
@@ -112,16 +117,16 @@ export default {
       connectedStreams: new Set(),
       // TODO(TM): Place these things in configuration of fetch the data from the backend server response.
       peerServer: {
-        key: 'peerjs', 
-        host: 'localhost',   
-        port: 9000, 
+        key: 'peerjs',
+        host: 'localhost',
+        port: 9000,
         path: 'myapp',
         config: {
           'iceServers': [
             { url: 'stun:stun.l.google.com:19302' },
             { url: 'turn:178.62.34.10:3478', credential: 'VQFJ3ySt8Mkm6VKT', username: 'chilloutapp' }
           ]
-        } 
+        }
       },
       username: null,
       question: null,
@@ -131,6 +136,7 @@ export default {
       youtubeVideoId: null,
       showShareableLinkModal: false,
       showYoutubeVideoURLInput: false,
+      notificationType: null,
     };
   },
   methods: {
@@ -197,15 +203,19 @@ export default {
       this.joinerService.sendAnswer(answer);
     },
     handleStartGame() {
-      this.hostService.sendQuestion();
+      setTimeout(() => this.hostService.sendQuestion(), 2000);
     },
     handleNextQuestion(question) {
       if(!this.question) {
         this.adaptUserVideosDisplay(true);
       }
+      this.notificationType = null;
       this.score = null;
       this.submittedAnswer = null;
       this.question = question;
+    },
+    handleGameInvite() {
+      this.notificationType = NotificationTypes.INVITED_FOR_TRIVIA_GAME;
     },
     host(username) {
       navigator.getUserMedia({ audio: true, video: true },
@@ -253,6 +263,7 @@ export default {
       );
     },
     play() {
+      this.notificationType = NotificationTypes.INVITING_FOR_TRIVIA_GAME;
       this.hostService.inviteToGame();
     },
     addUserVideoCam(peerId, stream) {
@@ -403,7 +414,8 @@ export default {
                   this.handleGameScore,
                   this.handleYoutubeVideoUrl,
                   this.addUserVideoCam,
-                  this.removeUserVideoCam);
+                  this.removeUserVideoCam,
+                  this.handleGameInvite);
                 this.joinerService.start(invitationCode, username);
               });
             });
