@@ -1,0 +1,12 @@
+version: '3.7'
+
+services:
+    chillout:
+        image: chillout
+        build: .
+        ports:
+        - "3000:3000"
+    peerjs-server:
+        image: peerjs/peerjs-server
+        ports:
+        - "9000:9000"

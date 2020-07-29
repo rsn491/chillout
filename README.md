@@ -8,6 +8,12 @@
 
 # Quickstart
 
+You can easily start Chillout with docker by running the following command:
+
+docker-compose up --build -d
+
+You can now access the Chillout app at: http://0.0.0.0:3000
+
 ## 1. Install deps
   ```
   npm install
