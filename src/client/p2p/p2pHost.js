@@ -146,7 +146,7 @@ export default class P2PHost {
           new AuthClient(newPeerConnection).acceptRoomAccess(this.roomUsers);
         }
       });
-      
+
       this.attachDataAPIHandler(newPeerConnection);
 
       newPeerConnection.on('error', (err) => console.log(err))

@@ -87,9 +87,6 @@ export default {
       this.$props.onAnswer(answer);
     },
   },
-  beforeUpdate() {
-
-  }
 };
 
 </script>

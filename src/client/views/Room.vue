@@ -24,17 +24,12 @@
           ? "user-video-cam-container"
           : "user-video-cam-container col-xs-12 col-sm-10 offset-sm-1 col-md-8 offset-md-2 col-lg-6 offset-lg-3"'/>
     </div>
-    <div v-if="!showMinimizedView && (youtubeVideoId || question)" class="maximize-button-container"><button v-on:click="maximize" class="btn shadow-blue-btn material-icons ">open_in_full</button></div>
+    <div v-if="!showMinimizedView && (youtubeVideoUrl || question)" class="maximize-button-container"><button v-on:click="maximize" class="btn shadow-blue-btn material-icons ">open_in_full</button></div>
 
     <div class="shared-content-container" v-if="showMinimizedView">
       <div class="shared-content-wallpaper"/>
       <div class="minimize-button-container"><button v-on:click="minimize" class="btn shadow-blue-btn material-icons ">close_fullscreen</button></div>
-      <div class="container video-container" v-if="youtubeVideoId && !question">
-        <iframe id="ytplayer" type="text/html"
-          :src="`https://www.youtube.com/embed/${youtubeVideoId}?autoplay=1`"
-          frameborder="0">
-        </iframe>
-      </div>
+      <YoutubeVideo v-if="youtubeVideoUrl && !question" :url=youtubeVideoUrl />
       <TriviaGame :question=question :score=score :onAnswer=handleGameAnswer />
     </div>
   </div>
@@ -46,6 +41,7 @@ import Peer from 'peerjs';
 
 import RoomNotification, { NotificationTypes } from '../components/RoomNotification';
 import Navbar from '../components/Navbar';
+import YoutubeVideo from '../components/YoutubeVideo';
 import TriviaGame from '../components/trivia/TriviaGame';
 import UserNameModal from '../components/UserNameModal';
 import getAPIUrl from '../shared/getAPIUrl.js';
@@ -61,6 +57,7 @@ export default {
   components: {
     Navbar,
     RoomNotification,
+    YoutubeVideo,
     TriviaGame,
     UserNameModal,
   },
@@ -91,9 +88,7 @@ export default {
       username: null,
       question: null,
       score: null,
-      possibleAnswers: null,
-      submittedAnswer: null,
-      youtubeVideoId: null,
+      youtubeVideoUrl: null,
       showShareableLinkModal: false,
       showYoutubeVideoURLInput: false,
       notificationType: null,
@@ -119,20 +114,12 @@ export default {
     },
     shareYoutubeVideo() {
       const youtubeVideoUrl = document.getElementById('youtubeVideoUrl').value.trim();
-
       this.getP2PService().sendYoutubeVideo(youtubeVideoUrl);
       this.showYoutubeVideoURLInput = false;
     },
     handleYoutubeVideoUrl(youtubeVideoUrl) {
-      if(!this.youtubeVideoId) {
-        this.adaptUserVideosDisplay(true);
-      }
-      const url = new URL(youtubeVideoUrl);
-      const queryParams = new URLSearchParams(url.search);
-
-      this.youtubeVideoId = queryParams.has("v")
-        ? queryParams.get("v")
-        : url.pathname.substring(1);
+      this.youtubeVideoUrl = youtubeVideoUrl;
+      this.adaptUserVideosDisplay(true);
     },
     handleGameScore(score) {
       this.score = score;
@@ -146,7 +133,6 @@ export default {
       }
       this.notificationType = null;
       this.score = null;
-      this.submittedAnswer = null;
       this.question = question;
     },
     handleGameInvite() {
@@ -422,16 +408,6 @@ export default {
   border-radius: 4px;
   margin: 2px;
   transition: width 0.7s, height 0.7s;
-}
-
-.video-container {
-  height: 60vh;
-  display: flex;
-}
-
-.video-container iframe {
-  height: auto;
-  width: 100%;
 }
 
 .youtube-video-url-container {
