@@ -28,7 +28,7 @@
 <script>
 
 import confetti from 'canvas-confetti';
-import GameScore from '../p2p/domain/gameScore';
+import GameScore from '../../p2p/domain/gameScore';
 
 export default {
     name: 'Podium',

@@ -35,47 +35,7 @@
           frameborder="0">
         </iframe>
       </div>
-      <div class='container game-container' v-if="question">
-        <div v-if="!score">
-          <div class='question-container'>
-            <h4>{{question.question}}</h4>
-            <circular-count-down-timer
-              :initial-value=20
-              :show-minute=false
-              :show-hour=false
-              :size=60
-              second-label=""
-              seconds-stroke-color="#748CAB"
-              underneath-stroke-color="#1D2D44"
-              @finish="submitAnswer(-1)"
-            ></circular-count-down-timer>
-          </div>
-          <div class="possible-answer-container">
-            <div v-bind:class='getClassForPossibleAnswer(possibleAnswer)'
-              v-for="possibleAnswer in question.possibleAnswers" :key="possibleAnswer"
-              v-on:click="() => submittedAnswer === null && submitAnswer(possibleAnswer)">
-              {{possibleAnswer}}
-            </div>
-          </div>
-        </div>
-        <div class="container player-score-container" v-if="score && !score.isGameFinished">
-          <h3>Leaderboard</h3>
-          <div class="player-score" v-for="(peerScore, index) in score.scores" :key="peerScore.peerId">
-            <div class="game-badge">
-              {{index === 0 ? '🏆' : ''}}
-              {{index === 1 ? '🥈' : ''}}
-              {{index === 2 ? '🥉' : ''}}
-            </div>
-            <div class="flex-grow-1">
-              {{`${index + 1}. ${peerScore.username}`}}
-            </div>
-            <div>
-              {{peerScore.score}}
-            </div>
-          </div>
-        </div>
-        <Podium  v-if="score && score.isGameFinished" :score=score />
-      </div>
+      <TriviaGame :question=question :score=score :onAnswer=handleGameAnswer />
     </div>
   </div>
 </template>
@@ -86,7 +46,7 @@ import Peer from 'peerjs';
 
 import RoomNotification, { NotificationTypes } from '../components/RoomNotification';
 import Navbar from '../components/Navbar';
-import Podium from '../components/Podium';
+import TriviaGame from '../components/trivia/TriviaGame';
 import UserNameModal from '../components/UserNameModal';
 import getAPIUrl from '../shared/getAPIUrl.js';
 import P2PHost from '../p2p/p2pHost.js';
@@ -100,8 +60,8 @@ export default {
   name: 'room',
   components: {
     Navbar,
-    Podium,
     RoomNotification,
+    TriviaGame,
     UserNameModal,
   },
   data() {
@@ -174,33 +134,8 @@ export default {
         ? queryParams.get("v")
         : url.pathname.substring(1);
     },
-    getClassForPossibleAnswer(possibleAnswer) {
-      if(this.submittedAnswer == null) {
-        return 'possible-answer';
-      }
-      if(possibleAnswer !== this.submittedAnswer) {
-        return 'possible-answer bg-light text-muted'
-      }
-      return this.submittedAnswer === this.question.correctAnswer
-        ? 'possible-answer bg-success text-white'
-        : 'possible-answer bg-danger text-white';
-    },
     handleGameScore(score) {
       this.score = score;
-    },
-    submitAnswer(answer) {
-      if(this.submittedAnswer != null) {
-        // answer is already submitted
-        return;
-      }
-
-      this.submittedAnswer = answer;
-      if(this.isHost()) {
-        this.hostService.handleAnswer(answer);
-        return;
-      }
-
-      this.joinerService.sendAnswer(answer);
     },
     handleStartGame() {
       setTimeout(() => this.hostService.sendQuestion(), 2000);
@@ -216,6 +151,13 @@ export default {
     },
     handleGameInvite() {
       this.notificationType = NotificationTypes.INVITED_FOR_TRIVIA_GAME;
+    },
+    handleGameAnswer(answer) {
+      if(this.isHost()) {
+        this.hostService.handleAnswer(answer);
+        return;
+      }
+      this.joinerService.sendAnswer(answer);
     },
     host(username) {
       navigator.getUserMedia({ audio: true, video: true },
@@ -427,9 +369,6 @@ export default {
       );
     },
   },
-  props: {
-    msg: String
-  }
 }
 </script>
 
@@ -451,31 +390,6 @@ export default {
   top: 0;
   width: 100%;
   z-index: -1;
-}
-
-.game-container {
-  background-color: white;
-  border: 2px solid #748CAB;
-  border-radius: 4px;
-  padding: 12px;
-}
-
-.player-score-container h3{
-  margin-bottom: 16px;
-  margin-top: 8px;
-}
-
-.player-score {
-  display: flex;
-  padding: 8px 0;
-}
-
-.player-score .game-badge {
-  width: 24px;
-}
-
-.room-id {
-  flex-grow: 1;
 }
 
 .room-session-container {
@@ -508,33 +422,6 @@ export default {
   border-radius: 4px;
   margin: 2px;
   transition: width 0.7s, height 0.7s;
-}
-
-.question-container {
-  display: flex;
-  padding: 16px;
-}
-
-.question-container h4 {
-  flex-grow: 1;
-}
-
-.question-container div {
-  text-align: center;
-}
-
-.possible-answer {
-  border: 1px solid #1D2D44;
-  border-radius: 4px;
-  cursor: pointer;
-  padding: 8px;
-  text-align: center;
-  margin: 8px 16px;
-}
-
-.possible-answer:hover {
-  background-color: #e9d758;
-  opacity: 0.5;
 }
 
 .video-container {
