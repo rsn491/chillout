@@ -47,3 +47,8 @@ npm run test
 ```
 npm run lint
 ```
+
+## Credits
+Trivia questions are retrieved directly from https://opentdb.com/ - "Free to use, user-contributed trivia question database"
+
+<div>Icons made by <a href="https://www.flaticon.com/authors/freepik" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div>
