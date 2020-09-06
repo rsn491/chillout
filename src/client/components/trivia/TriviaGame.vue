@@ -22,34 +22,18 @@
             </div>
           </div>
         </div>
-        <div class="container player-score-container" v-if="score && !score.isGameFinished">
-          <h3>Leaderboard</h3>
-          <div class="player-score" v-for="(peerScore, index) in score.scores" :key="peerScore.peerId">
-            <div class="game-badge">
-              {{index === 0 ? '🏆' : ''}}
-              {{index === 1 ? '🥈' : ''}}
-              {{index === 2 ? '🥉' : ''}}
-            </div>
-            <div class="flex-grow-1">
-              {{`${index + 1}. ${peerScore.username}`}}
-            </div>
-            <div>
-              {{peerScore.score}}
-            </div>
-          </div>
-        </div>
-        <Podium  v-if="score && score.isGameFinished" :score=score />
+        <Leaderboard v-if=score :playerScores=score.scores :isGameFinished=score.isGameFinished />
     </div>
 </template>
 
 <script>
 
-import Podium from './Podium';
+import Leaderboard from './Leaderboard';
 
 export default {
   name: 'TriviaGame',
   components: {
-    Podium,
+    Leaderboard,
   },
   props: {
     question: Object,
@@ -111,20 +95,6 @@ export default {
 
 .question-container div {
   text-align: center;
-}
-
-.player-score-container h3{
-  margin-bottom: 16px;
-  margin-top: 8px;
-}
-
-.player-score {
-  display: flex;
-  padding: 8px 0;
-}
-
-.player-score .game-badge {
-  width: 24px;
 }
 
 .possible-answer {
