@@ -6,7 +6,7 @@ const {RoomRepo} = require('./src/server/roomRepo.js');
 const {TriviaRepo} = require('./src/server/triviaRepo.js');
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 const jsonParser = bodyParser.json();
 
 const roomRepo = new RoomRepo();
