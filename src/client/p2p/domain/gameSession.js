@@ -27,9 +27,9 @@ export default class GameSession {
   getScoreBoard() {
     const scores = Object.keys(this.score)
       .map(peerId => {
-        return { 
+        return {
           peerId,
-          username: this.users.find(user => user.getPeerId() === peerId).username,  
+          username: this.users.find(user => user.getPeerId() === peerId).username,
           score: this.score[peerId]
         };
       });
@@ -64,6 +64,6 @@ export default class GameSession {
   }
 
   isReadyToStart() {
-    return this.confirmedPeerIds.length === this.peerIds.size;
+    return this.confirmedPeerIds.size === this.peerIds.length;
   }
 }

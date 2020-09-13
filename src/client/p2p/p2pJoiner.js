@@ -40,7 +40,7 @@ export default class P2PJoiner {
   handleRoomAccessGranted(peers) {
     // connect with media stream to all peers
     this.callPeer(this.hostPeer, this.ownStream);
-    peers.forEach(remotePeer => this.callPeer(remotePeer, this.ownStream));
+    peers.forEach(remotePeer => this.callPeer(remotePeer.peerConnection, this.ownStream));
   }
 
   handleAuthorizedPeer(peerId) {

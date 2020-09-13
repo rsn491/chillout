@@ -44,7 +44,6 @@ import Navbar from '../components/Navbar';
 import YoutubeVideo from '../components/YoutubeVideo';
 import TriviaGame from '../components/trivia/TriviaGame';
 import UserNameModal from '../components/UserNameModal';
-import getAPIUrl from '../shared/getAPIUrl.js';
 import P2PHost from '../p2p/p2pHost.js';
 import P2PJoiner from '../p2p/p2pJoiner.js';
 
@@ -78,12 +77,6 @@ export default {
         host: 'localhost',
         port: 9000,
         path: 'myapp',
-        config: {
-          'iceServers': [
-            { url: 'stun:stun.l.google.com:19302' },
-            { url: 'turn:178.62.34.10:3478', credential: 'VQFJ3ySt8Mkm6VKT', username: 'chilloutapp' }
-          ]
-        }
       },
       username: null,
       question: null,
@@ -152,19 +145,8 @@ export default {
 
           this.peer = new Peer(this.peerServer);
           this.peer.on('open', (id) => {
+            this.roomId = id;
             this.addUserVideoCam(id, stream);
-            fetch(getAPIUrl('room'), {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                peerId: id
-              })
-            }).then(res => {
-              res.json().then(json => this.roomId = json.roomId)
-            });
-
             this.hostService = new P2PHost(
               this.peer,
               username,
@@ -316,6 +298,7 @@ export default {
       }
     },
     join(roomId, invitationCode, username) {
+      this.roomId = roomId;
       navigator.getUserMedia({ audio: true, video: true },
         (stream) => {
           this.localStream = stream;
@@ -323,30 +306,17 @@ export default {
 
           this.peer.on('open', (id) => {
             this.addUserVideoCam(id, stream);
-            fetch(getAPIUrl(`room/${roomId}/join`), {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                peerId: id
-              })
-            }).then(res => {
-              this.roomId = roomId;
-              res.json().then(json => {
-                this.joinerService = new P2PJoiner(
-                  this.peer,
-                  json.host,
-                  this.localStream,
-                  this.handleNextQuestion,
-                  this.handleGameScore,
-                  this.handleYoutubeVideoUrl,
-                  this.addUserVideoCam,
-                  this.removeUserVideoCam,
-                  this.handleGameInvite);
-                this.joinerService.start(invitationCode, username);
-              });
-            });
+            this.joinerService = new P2PJoiner(
+              this.peer,
+              this.roomId,
+              this.localStream,
+              this.handleNextQuestion,
+              this.handleGameScore,
+              this.handleYoutubeVideoUrl,
+              this.addUserVideoCam,
+              this.removeUserVideoCam,
+              this.handleGameInvite);
+            this.joinerService.start(invitationCode, username);
           });
         },
         function(err) {
