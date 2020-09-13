@@ -30,6 +30,7 @@ export default {
     props: {
       playerScores: Array,
       isGameFinished: Boolean,
+      onPodiumAnimationFinished: Function,
     },
     data() {
       return {
@@ -74,6 +75,7 @@ export default {
           setTimeout(() => this.show2ndPlaceTrophy = true, 2000);
           setTimeout(() => this.show1stPlaceTrophy = true, 4000);
           setTimeout(this.throwSideConfetti, 4000);
+          setTimeout(this.$props.onPodiumAnimationFinished, 6000);
         }
     }
 };

@@ -22,7 +22,7 @@
             </div>
           </div>
         </div>
-        <Leaderboard v-if=score :playerScores=score.scores :isGameFinished=score.isGameFinished />
+        <Leaderboard v-if=score :playerScores=score.scores :isGameFinished=score.isGameFinished :onPodiumAnimationFinished=onGameFinished />
     </div>
 </template>
 
@@ -39,6 +39,7 @@ export default {
     question: Object,
     score: Object,
     onAnswer: Function,
+    onGameFinished: Function,
   },
   data() {
     return {

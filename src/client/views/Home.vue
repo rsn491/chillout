@@ -1,15 +1,16 @@
 <template>
-    <div>
-        <Navbar/>
+    <div class="home-page">
+        <Navbar backgroundColor="transparent"/>
         <div class="home-page-container">
-            <h1>P2P video chat app <br> for hanging out</h1>
+            <h1>chillout</h1>
+            <h2>P2P video chat app for hanging out with friends</h2>
 
             <div class="app-logo-container">
                 <div class="app-logo"/>
                 <img src="https://img.shields.io/github/stars/rsn491/chillout?style=social"/>
             </div>
-                
-            <button class="btn shadow-blue-btn confirm-btn" v-on:click=host>Try it out</button>
+
+            <button class="btn shadow-blue-btn confirm-btn" v-on:click=host>Try It Now</button>
         </div>
     </div>
 </template>
@@ -32,6 +33,11 @@ export default {
 </script>
 
 <style>
+    .home-page {
+        background-image: linear-gradient(0, #3e5c76, 30%, #39373a);
+        height: 100vh;
+    }
+
     .app-logo {
         background-size: contain;
         background-position-x: center;
@@ -61,10 +67,12 @@ export default {
     }
 
     h1 {
-        background-color: #F0F3F5;
-        color: #0D1321;
-        padding: 80px;
-        width: 100%
+        color: #FDFFFC;
+        margin-top: 80px;
+    }
+
+    h2 {
+        color: #F4FFFD;
     }
 
     .btn:focus {
@@ -72,11 +80,11 @@ export default {
     }
 
     .confirm-btn {
-        padding: 8px 44px;
+        padding: 12px 48px;
     }
 
     .shadow-blue-btn {
-        background-color: #748CAB;
+       background-color: #3e5c76;
         color: #F0F3F5;
     }
 

@@ -19,10 +19,5 @@ export default new Router({
       name: 'room',
       component: Room,
     },
-    {
-      path: '/room/:roomId',
-      name: 'room',
-      component: Room,
-    },
   ],
 });

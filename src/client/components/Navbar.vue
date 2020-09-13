@@ -1,5 +1,5 @@
 <template>
-    <div class='navbar navbar-expand-lg justify-content-between'>
+    <div v-bind:style="{ backgroundColor: backgroundColor }" class='navbar navbar-expand-lg justify-content-between'>
         <div class="navbar-brand">
             <div class='app-logo' />
         </div>
@@ -18,6 +18,10 @@
 export default {
     name: 'Navbar',
     props: {
+      backgroundColor: {
+          type: String,
+          default: '#3E5C76'
+      },
       onShareRoom: Function,
       onStartTriviaGame: Function,
       onOpenShareYoutube: Function,
@@ -33,9 +37,8 @@ export default {
 <style scoped>
 
     .navbar {
-        background-color: #3E5C76;
-        display: flex;
         align-content: center;
+        display: flex;
         padding: 8px;
         height: 60px;
     }
@@ -50,8 +53,12 @@ export default {
         color: #F0F3F5;
         font-size: 1.25rem;
         height: 48px;
-        margin: 1px; 
+        margin: 1px;
         width: 48px;
+    }
+
+    .navbar-controls .btn:hover {
+        opacity: 0.7;
     }
 
 </style>

@@ -29,8 +29,8 @@
     <div class="shared-content-container" v-if="showMinimizedView">
       <div class="shared-content-wallpaper"/>
       <div class="minimize-button-container"><button v-on:click="minimize" class="btn shadow-blue-btn material-icons ">close_fullscreen</button></div>
-      <YoutubeVideo v-if="youtubeVideoUrl && !question" :url=youtubeVideoUrl />
-      <TriviaGame :question=question :score=score :onAnswer=handleGameAnswer />
+      <YoutubeVideo v-if="youtubeVideoUrl && !isGameOngoing" :url=youtubeVideoUrl />
+      <TriviaGame :question=question :score=score :onAnswer=handleGameAnswer :onGameFinished=handleGameFinished />
     </div>
   </div>
 </template>
@@ -93,7 +93,7 @@ export default {
     },
     shareRoom() {
       const invitationCode = this.hostService.createTmpInvitationCode();
-      const shareableLink = `${window.location.origin}/room/${this.roomId}?code=${invitationCode}`;
+      const shareableLink = `${window.location.origin}/room?id=${this.roomId}&code=${invitationCode}`;
       navigator.permissions.query({name: "clipboard-write"}).then(result => {
         if (result.state == "granted" || result.state == "prompt") {
             navigator.clipboard.writeText(shareableLink).then(() => {
@@ -106,21 +106,31 @@ export default {
       this.showYoutubeVideoURLInput = !this.showYoutubeVideoURLInput;
     },
     shareYoutubeVideo() {
+      if (this.isGameOngoing) {
+        alert("Can not share youtube video while game is ongoing")
+        return;
+      }
       const youtubeVideoUrl = document.getElementById('youtubeVideoUrl').value.trim();
       this.getP2PService().sendYoutubeVideo(youtubeVideoUrl);
       this.showYoutubeVideoURLInput = false;
     },
     handleYoutubeVideoUrl(youtubeVideoUrl) {
+      this.question = null;
+      this.score = null;
       this.youtubeVideoUrl = youtubeVideoUrl;
       this.adaptUserVideosDisplay(true);
     },
     handleGameScore(score) {
       this.score = score;
     },
+    handleGameFinished() {
+      this.isGameOngoing = false;
+    },
     handleStartGame() {
       setTimeout(() => this.hostService.sendQuestion(), 2000);
     },
     handleNextQuestion(question) {
+      this.isGameOngoing = true;
       if(!this.question) {
         this.adaptUserVideosDisplay(true);
       }
@@ -137,40 +147,6 @@ export default {
         return;
       }
       this.joinerService.sendAnswer(answer);
-    },
-    host(username) {
-      navigator.getUserMedia({ audio: true, video: true },
-        (stream) => {
-          this.localStream = stream;
-
-          this.peer = new Peer(this.peerServer);
-          this.peer.on('open', (id) => {
-            this.roomId = id;
-            this.addUserVideoCam(id, stream);
-            this.hostService = new P2PHost(
-              this.peer,
-              username,
-              this.handleStartGame,
-              this.handleNextQuestion,
-              this.handleGameScore,
-              this.handleYoutubeVideoUrl);
-            this.hostService.start();
-            this.peer.on('call', (call) => {
-              if(!this.hostService.isAuthorized(call.peer)) {
-                // unauthorized connection
-                call.close();
-                return;
-              }
-              call.answer(stream);
-              call.on('stream', (peerStream) => this.addUserVideoCam(call.peer, peerStream));
-              call.on('close', () => this.removeUserVideoCam(call.peer));
-            });
-          });
-        },
-        function(err) {
-         console.log("The following error occurred: " + err.name);
-        }
-      );
     },
     play() {
       this.notificationType = NotificationTypes.INVITING_FOR_TRIVIA_GAME;
@@ -285,8 +261,8 @@ export default {
     },
     handleUsernamePicked(username) {
       const url = new URL(window.location);
-      const roomId = url.pathname.substring("/room/".length);
-      const invitationCode = url.searchParams.get("code");
+      const roomId = url.searchParams.get('id');
+      const invitationCode = url.searchParams.get('code');
 
       this.username = username;
 
@@ -296,6 +272,40 @@ export default {
       } else if(invitationCode) {
         this.join(roomId, invitationCode, username);
       }
+    },
+    host(username) {
+      navigator.getUserMedia({ audio: true, video: true },
+        (stream) => {
+          this.localStream = stream;
+
+          this.peer = new Peer(this.peerServer);
+          this.peer.on('open', (id) => {
+            this.roomId = id;
+            this.addUserVideoCam(id, stream);
+            this.hostService = new P2PHost(
+              this.peer,
+              username,
+              this.handleStartGame,
+              this.handleNextQuestion,
+              this.handleGameScore,
+              this.handleYoutubeVideoUrl);
+            this.hostService.start();
+            this.peer.on('call', (call) => {
+              if(!this.hostService.isAuthorized(call.peer)) {
+                // unauthorized connection
+                call.close();
+                return;
+              }
+              call.answer(stream);
+              call.on('stream', (peerStream) => this.addUserVideoCam(call.peer, peerStream));
+              call.on('close', () => this.removeUserVideoCam(call.peer));
+            });
+          });
+        },
+        function(err) {
+         console.log("The following error occurred: " + err.name);
+        }
+      );
     },
     join(roomId, invitationCode, username) {
       this.roomId = roomId;
