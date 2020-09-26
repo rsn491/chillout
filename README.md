@@ -6,6 +6,16 @@
   width="200"
 />
 
+P2P webrtc-based video chat app built with [PeerJS](https://peerjs.com/)
+
+[demo](https://chilloutapp.herokuapp.com/)
+
+# Features
+
+- Video conversation
+- Play trivia games
+- Share youtube videos inside the room session
+
 # Quickstart
 
 You can easily start Chillout with docker by running the following command:
