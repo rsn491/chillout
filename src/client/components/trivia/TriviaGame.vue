@@ -82,7 +82,8 @@ export default {
   background-color: white;
   border: 2px solid #748CAB;
   border-radius: 4px;
-  padding: 12px;
+  padding: 12px 48px;
+  padding-bottom: 64px;
 }
 
 .question-container {

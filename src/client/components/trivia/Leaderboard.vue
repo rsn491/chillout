@@ -1,7 +1,10 @@
 <template>
 <div class="leaderboard-container">
   <canvas id="leaderboard-canvas"/>
-  <h3 v-if=show1stPlaceTrophy>Congratulations<br>{{playerScores[0].username}}!</h3>
+  <div class="congratulations" v-if=show1stPlaceTrophy>
+    <h4>Congratulations</h4>
+    <h3>{{playerScores[0].username}}</h3>
+  </div>
   <div class="container player-score-container">
     <h3 v-if=!isGameFinished>Leaderboard</h3>
     <div class="player-score" v-for="(playerScore, index) in playerScores" :key="playerScore.peerId">
@@ -84,17 +87,16 @@ export default {
 
 <style scoped>
 
-  .leaderboard-container {
-    padding: 8px 16px;
-  }
-
   canvas {
     height: 0;
   }
 
-  .player-score-container h3{
-    margin-bottom: 16px;
-    margin-top: 8px;
+  .congratulations {
+    text-align: center;
+  }
+
+  .congratulations >h4 {
+    color: #39373a;
   }
 
   .player-score {

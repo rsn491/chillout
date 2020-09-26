@@ -10,7 +10,7 @@
                 <img src="https://img.shields.io/github/stars/rsn491/chillout?style=social"/>
             </div>
 
-            <button class="btn shadow-blue-btn confirm-btn" v-on:click=host>Try It Now</button>
+            <button class="btn confirm-btn red-btn" v-on:click=host>Try It Now</button>
         </div>
     </div>
 </template>
@@ -83,13 +83,35 @@ export default {
         padding: 12px 48px;
     }
 
+    .red-btn {
+        background-color: #CE4257;
+        color: #F0F3F5;
+        transition: padding 0.6s;
+    }
+
+    .red-btn:hover {
+        background-color: #b63a4c;
+        color: #F0F3F5;
+        padding: 12px 60px;
+    }
+
+    .light-blue-btn {
+        background-color: #7C98B3;
+        color: #F0F3F5;
+    }
+
+    .light-blue-btn:hover {
+        background-color: #5c7185;
+        color: #F0F3F5;
+    }
+
     .shadow-blue-btn {
-       background-color: #3e5c76;
+        background-color: #3e5c76;
         color: #F0F3F5;
     }
 
     .shadow-blue-btn:hover {
-        background-color: #1D2D44;
+        background-color: #253847;
         color: #F0F3F5;
     }
 

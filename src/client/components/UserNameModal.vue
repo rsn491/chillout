@@ -3,16 +3,16 @@
   <div class="modal d-block" aria-modal="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
-      
+
         <div class="modal-header">
           <h4 class="modal-title">Pick your username</h4>
         </div>
-        
+
         <div class="modal-body">
           <input type="text" placeholder="username" :value=username />
-          <button class="btn shadow-blue-btn material-icons" v-on:click="generateRandomUsername">replay</button>
+          <button class="btn light-blue-btn material-icons" v-on:click="generateRandomUsername">replay</button>
         </div>
-        
+
         <div class="modal-footer">
           <button class="btn shadow-blue-btn confirm-btn" v-on:click="() => onUsernamePicked(username)">Ok</button>
         </div>

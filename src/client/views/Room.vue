@@ -351,7 +351,7 @@ export default {
   background-size: contain;
   height: 100%;
   left: 0;
-  opacity: 0.4;
+  opacity: 0.1;
   position: absolute;
   top: 0;
   width: 100%;
