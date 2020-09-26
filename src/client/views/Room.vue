@@ -74,9 +74,9 @@ export default {
       // TODO(TM): Place these things in configuration of fetch the data from the backend server response.
       peerServer: {
         key: 'peerjs',
-        host: 'localhost',
-        port: 9000,
-        path: 'myapp',
+        host: process.env.VUE_APP_PEERJS_HOST || 'localhost',
+        port: process.env.VUE_APP_PEERJS_PORT || '9000',
+        path: process.env.VUE_APP_PEERJS_PATH || 'myapp',
       },
       username: null,
       question: null,
