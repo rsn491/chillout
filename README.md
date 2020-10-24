@@ -6,7 +6,7 @@
   width="200"
 />
 
-P2P webrtc-based video chat app built with [PeerJS](https://peerjs.com/)
+P2P video chat app for hanging out with friends, built with [PeerJS](https://peerjs.com/)
 
 [demo](https://chilloutapp.herokuapp.com/)
 
@@ -14,7 +14,7 @@ P2P webrtc-based video chat app built with [PeerJS](https://peerjs.com/)
 
 - Video conversation
 - Play trivia games
-- Share youtube videos inside the room session
+- Share youtube videos
 
 # Quickstart
 
