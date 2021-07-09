@@ -1,5 +1,9 @@
 FROM node:12
 
+ARG PEERJS_PATH
+ARG PEERJS_HOST
+ARG PEERJS_PORT
+
 WORKDIR /app
 
 COPY package*.json ./
@@ -7,6 +11,10 @@ COPY package*.json ./
 RUN npm install
 
 COPY . ./
+
+ENV VUE_APP_PEERJS_PATH=${PEERJS_PATH}
+ENV VUE_APP_PEERJS_HOST=${PEERJS_HOST}
+ENV VUE_APP_PEERJS_PORT=${PEERJS_PORT}
 
 RUN npm run build
 
