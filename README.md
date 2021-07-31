@@ -8,7 +8,7 @@
 
 P2P video chat app for hanging out with friends, built with [PeerJS](https://peerjs.com/)
 
-[demo](https://chillout-app-5m5pr.ondigitalocean.app/)
+[demo](https://chilloutapp.herokuapp.com/)
 
 # Features
 
