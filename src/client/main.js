@@ -1,13 +1,11 @@
-import Vue from 'vue';
+import { createApp } from 'vue'
 import App from './App.vue';
 import router from './router';
-
 import CircularCountDownTimer from "vue-circular-count-down-timer";
 
-Vue.use(CircularCountDownTimer);
-Vue.config.productionTip = false
+const app = createApp(App)
 
-new Vue({
-  router,
-  render: h => h(App),
-}).$mount('#app');
+app.use(CircularCountDownTimer);
+app.use(router)
+
+app.mount('#app')

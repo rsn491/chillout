@@ -347,7 +347,7 @@ export default {
 }
 
 .shared-content-wallpaper {
-  background-image: url(/img/pattern.png);
+  background-image: url('@/../public/img/pattern.png');
   background-size: contain;
   height: 100%;
   left: 0;
