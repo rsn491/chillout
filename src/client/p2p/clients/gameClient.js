@@ -1,4 +1,4 @@
-import P2PClient from '../p2pClient.js';
+import P2PClient from '../p2pClient.ts';
 import P2PRequest from '../p2pRequest.js';
 import MESSAGE_TYPE from '../messageTypes';
 
